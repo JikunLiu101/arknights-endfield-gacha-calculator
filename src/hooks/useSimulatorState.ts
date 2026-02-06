@@ -6,9 +6,9 @@ export function useSimulatorState() {
     // 默认值
     currentPulls: 0,
     currentArsenal: 0,
-    pullsPerVersion: 50,
-    arsenalPerVersion: 1000,
-    versionCount: 3,
+    pullsPerVersion: 60,
+    arsenalPerVersion: 1980,
+    versionCount: 6,
     bannersPerVersion: 2,
     baseStrategy: 'S1',
     addonStrategies: {

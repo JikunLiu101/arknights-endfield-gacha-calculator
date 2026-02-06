@@ -59,237 +59,164 @@ function pullUntil(
 
 // ============ 测试用例 ============
 
-console.log('=== 开始测试核心抽卡引擎 ===\n');
+describe('核心抽卡引擎测试', () => {
+  describe('保底机制', () => {
+    it('65抽后触发保底', () => {
+      const rng = createRng('test-pity');
+      let globalState = createInitialGlobalState();
+      const bannerState = createInitialBannerState();
 
-// 测试1: 验证保底机制（65抽触发）
-console.log('测试1: 保底机制（65抽后触发）');
-{
-  const rng = createRng('test-pity');
-  let globalState = createInitialGlobalState();
-  const bannerState = createInitialBannerState();
+      // 手动设置保底计数器为65（已经触发保底）
+      globalState.pityCounter = 65;
 
-  // 手动设置保底计数器为65（已经触发保底）
-  globalState.pityCounter = 65;
+      // 下一次抽卡应该有5.8%的概率出6星
+      const { result, newGlobalState } = simulateSinglePull(globalState, bannerState, rng);
 
-  // 下一次抽卡应该有5.8%的概率出6星
-  const { result, newGlobalState } = simulateSinglePull(globalState, bannerState, rng);
+      expect(result.triggeredPity).toBe(true);
+      expect(globalState.pityCounter).toBe(65);
+      expect(newGlobalState.pityCounter).toBeGreaterThanOrEqual(0);
+    });
 
-  console.log(`  - 保底计数器: ${globalState.pityCounter} -> ${newGlobalState.pityCounter}`);
-  console.log(`  - 是否触发保底概率提升: ${result.triggeredPity}`);
-  console.log(`  - 抽到的稀有度: ${result.rarity}星`);
+    it('获得6星后重置保底', () => {
+      const rng = createRng('test-pity-reset');
+      let globalState = createInitialGlobalState();
+      let bannerState = createInitialBannerState();
 
-  if (result.triggeredPity) {
-    console.log('  ✓ 保底触发标记正确');
-  } else {
-    console.log('  ✗ 保底触发标记错误（保底计数器>=65时应该触发）');
-  }
-}
+      // 模拟抽到6星前的保底计数
+      globalState.pityCounter = 70;
 
-console.log('\n测试2: 保底重置（获得6星后重置）');
-{
-  const rng = createRng('test-pity-reset');
-  let globalState = createInitialGlobalState();
-  let bannerState = createInitialBannerState();
+      // 执行多次抽卡直到出6星
+      const { finalGlobalState, results } = pullUntil(
+        globalState,
+        bannerState,
+        rng,
+        200,
+        (result) => result.rarity === 6
+      );
 
-  // 模拟抽到6星前的保底计数
-  globalState.pityCounter = 70;
+      const got6Star = results.some((r) => r.rarity === 6);
 
-  // 执行多次抽卡直到出6星
-  const { finalGlobalState, results } = pullUntil(
-    globalState,
-    bannerState,
-    rng,
-    200,
-    (result) => result.rarity === 6
-  );
+      expect(got6Star).toBe(true);
+      expect(finalGlobalState.pityCounter).toBe(0);
+    });
 
-  const got6Star = results.some((r) => r.rarity === 6);
+    it('第80抽强制给出6星', () => {
+      const rng = createRng('test-hard-pity');
 
-  console.log(`  - 初始保底计数: 70`);
-  console.log(`  - 是否抽到6星: ${got6Star}`);
-  console.log(`  - 最终保底计数: ${finalGlobalState.pityCounter}`);
+      // 测试80抽硬保底
+      let globalState = createInitialGlobalState();
+      let bannerState = createInitialBannerState();
 
-  if (got6Star && finalGlobalState.pityCounter === 0) {
-    console.log('  ✓ 保底重置正确');
-  } else {
-    console.log('  ✗ 保底重置失败');
-  }
-}
+      // 设置保底计数器为80（硬保底触发点）
+      globalState.pityCounter = 80;
 
-console.log('\n测试3: 井机制（第120抽强制UP）');
-{
-  const rng = createRng('test-spark');
-  let globalState = createInitialGlobalState();
-  let bannerState = createInitialBannerState();
+      // 第80抽应该100%给6星
+      const { result, newGlobalState } = simulateSinglePull(globalState, bannerState, rng);
 
-  // 模拟前119抽都没出UP
-  bannerState.sparkCounter = 119;
-  bannerState.gotRateUpInThisBanner = false;
+      expect(result.rarity).toBe(6);
+      expect(result.triggeredPity).toBe(true);
 
-  // 第120抽应该强制给UP
-  const { result, newBannerState } = simulateSinglePull(globalState, bannerState, rng);
+      // 测试多次验证100%概率
+      let successCount = 0;
+      for (let i = 0; i < 100; i++) {
+        const testRng = createRng(`hard-pity-${i}`);
+        const testGlobal = createInitialGlobalState();
+        testGlobal.pityCounter = 80;
+        const testBanner = createInitialBannerState();
 
-  console.log(`  - 井计数器: ${bannerState.sparkCounter} -> ${newBannerState.sparkCounter}`);
-  console.log(`  - 是否触发井: ${result.triggeredSpark}`);
-  console.log(`  - 稀有度: ${result.rarity}星`);
-  console.log(`  - 是否UP: ${result.isRateUp}`);
+        const { result: testResult } = simulateSinglePull(testGlobal, testBanner, testRng);
+        if (testResult.rarity === 6) {
+          successCount++;
+        }
+      }
 
-  if (result.triggeredSpark && result.rarity === 6 && result.isRateUp) {
-    console.log('  ✓ 井机制触发正确，强制给出UP角色');
-  } else {
-    console.log('  ✗ 井机制触发失败');
-  }
-}
+      expect(successCount).toBe(100);
+    });
+  });
 
-console.log('\n测试3.5: 硬保底机制（第80抽强制6星）');
-{
-  const rng = createRng('test-hard-pity');
+  describe('井机制', () => {
+    it('第120抽强制给出UP', () => {
+      const rng = createRng('test-spark');
+      let globalState = createInitialGlobalState();
+      let bannerState = createInitialBannerState();
 
-  // 测试80抽硬保底
-  let globalState = createInitialGlobalState();
-  let bannerState = createInitialBannerState();
+      // 模拟前119抽都没出UP
+      bannerState.sparkCounter = 119;
+      bannerState.gotRateUpInThisBanner = false;
 
-  // 设置保底计数器为80（硬保底触发点）
-  globalState.pityCounter = 80;
+      // 第120抽应该强制给UP
+      const { result, newBannerState } = simulateSinglePull(globalState, bannerState, rng);
 
-  // 第80抽应该100%给6星
-  const { result, newGlobalState } = simulateSinglePull(globalState, bannerState, rng);
+      expect(result.triggeredSpark).toBe(true);
+      expect(result.rarity).toBe(6);
+      expect(result.isRateUp).toBe(true);
+    });
+  });
 
-  console.log(`  - 保底计数器: ${globalState.pityCounter}`);
-  console.log(`  - 稀有度: ${result.rarity}星`);
-  console.log(`  - 是否触发保底: ${result.triggeredPity}`);
+  describe('加急招募', () => {
+    it('10连必得5星或以上', () => {
+      const rng = createRng('test-fast-track');
+      let globalState = createInitialGlobalState();
 
-  if (result.rarity === 6 && result.triggeredPity) {
-    console.log('  ✓ 80抽硬保底触发正确，强制给出6星');
-  } else {
-    console.log('  ✗ 80抽硬保底触发失败（应该100%给6星）');
-  }
+      // 设置初始保底计数
+      globalState.pityCounter = 30;
+      const initialPity = globalState.pityCounter;
 
-  // 测试多次验证100%概率
-  console.log('\n  验证100%触发率（100次测试）:');
-  let successCount = 0;
-  for (let i = 0; i < 100; i++) {
-    const testRng = createRng(`hard-pity-${i}`);
-    const testGlobal = createInitialGlobalState();
-    testGlobal.pityCounter = 80;
-    const testBanner = createInitialBannerState();
+      // 执行加急招募
+      const { result, newGlobalState } = simulateFastTrack(globalState, rng);
 
-    const { result: testResult } = simulateSinglePull(testGlobal, testBanner, testRng);
-    if (testResult.rarity === 6) {
-      successCount++;
-    }
-  }
+      const has5StarOrAbove = result.pullResults.some((r) => r.rarity >= 5);
+      const pityUnchanged = newGlobalState.pityCounter === initialPity;
 
-  console.log(`  - 100次测试中获得6星次数: ${successCount}/100`);
-  if (successCount === 100) {
-    console.log('  ✓ 硬保底100%触发验证通过');
-  } else {
-    console.log('  ✗ 硬保底触发率不是100%');
-  }
-}
+      expect(result.pullResults.length).toBe(10);
+      expect(has5StarOrAbove).toBe(true);
+      expect(pityUnchanged).toBe(true);
+    });
+  });
 
-console.log('\n测试4: 加急招募（10连必得5星+，不影响计数器）');
-{
-  const rng = createRng('test-fast-track');
-  let globalState = createInitialGlobalState();
+  describe('武库配额累计', () => {
+    it('根据稀有度正确计算配额', () => {
+      const rng = createRng('test-arsenal');
+      let globalState = createInitialGlobalState();
+      const bannerState = createInitialBannerState();
 
-  // 设置初始保底计数
-  globalState.pityCounter = 30;
-  const initialPity = globalState.pityCounter;
+      // 抽一次
+      const { result, newGlobalState } = simulateSinglePull(globalState, bannerState, rng);
 
-  // 执行加急招募
-  const { result, newGlobalState } = simulateFastTrack(globalState, rng);
+      const expectedPoints = result.rarity === 6 ? 2000 : result.rarity === 5 ? 200 : 20;
 
-  const has5StarOrAbove = result.pullResults.some((r) => r.rarity >= 5);
-  const pityUnchanged = newGlobalState.pityCounter === initialPity;
+      expect(result.arsenalPoints).toBe(expectedPoints);
+      expect(newGlobalState.arsenalPoints).toBe(expectedPoints);
+    });
+  });
 
-  console.log(`  - 加急招募抽数: ${result.pullResults.length}`);
-  console.log(`  - 是否至少有1个5星+: ${has5StarOrAbove}`);
-  console.log(`  - 保底计数器 (前): ${initialPity}`);
-  console.log(`  - 保底计数器 (后): ${newGlobalState.pityCounter}`);
-  console.log(`  - 获得武库配额: ${result.arsenalGained}`);
+  describe('概率统计验证', () => {
+    it('大样本测试概率分布', () => {
+      const rng = createRng('test-probability');
+      const globalState = createInitialGlobalState();
+      const bannerState = createInitialBannerState();
 
-  if (result.pullResults.length === 10) {
-    console.log('  ✓ 加急招募抽数正确（10连）');
-  } else {
-    console.log('  ✗ 加急招募抽数错误');
-  }
+      const sampleSize = 10000;
+      let count6Star = 0;
+      let count5Star = 0;
+      let count4Star = 0;
 
-  if (has5StarOrAbove) {
-    console.log('  ✓ 必得5星+规则正确');
-  } else {
-    console.log('  ✗ 必得5星+规则失败');
-  }
+      for (let i = 0; i < sampleSize; i++) {
+        const { result } = simulateSinglePull(globalState, bannerState, rng);
+        if (result.rarity === 6) count6Star++;
+        if (result.rarity === 5) count5Star++;
+        if (result.rarity === 4) count4Star++;
+      }
 
-  if (pityUnchanged) {
-    console.log('  ✓ 保底计数器未受影响');
-  } else {
-    console.log('  ✗ 保底计数器被改变了');
-  }
-}
+      const rate6 = count6Star / sampleSize;
+      const rate5 = count5Star / sampleSize;
+      const rate4 = count4Star / sampleSize;
 
-console.log('\n测试5: 武库配额累计');
-{
-  const rng = createRng('test-arsenal');
-  let globalState = createInitialGlobalState();
-  const bannerState = createInitialBannerState();
-
-  console.log(`  - 初始配额: ${globalState.arsenalPoints}`);
-
-  // 抽一次
-  const { result, newGlobalState } = simulateSinglePull(globalState, bannerState, rng);
-
-  console.log(`  - 抽到: ${result.rarity}星`);
-  console.log(`  - 本次获得: ${result.arsenalPoints}点`);
-  console.log(`  - 累计配额: ${newGlobalState.arsenalPoints}`);
-
-  const expectedPoints = result.rarity === 6 ? 2000 : result.rarity === 5 ? 200 : 20;
-
-  if (result.arsenalPoints === expectedPoints) {
-    console.log('  ✓ 武库配额计算正确');
-  } else {
-    console.log('  ✗ 武库配额计算错误');
-  }
-}
-
-console.log('\n测试6: 概率统计验证（大样本测试）');
-{
-  const rng = createRng('test-probability');
-  const globalState = createInitialGlobalState();
-  const bannerState = createInitialBannerState();
-
-  const sampleSize = 10000;
-  let count6Star = 0;
-  let count5Star = 0;
-  let count4Star = 0;
-
-  for (let i = 0; i < sampleSize; i++) {
-    const { result } = simulateSinglePull(globalState, bannerState, rng);
-    if (result.rarity === 6) count6Star++;
-    if (result.rarity === 5) count5Star++;
-    if (result.rarity === 4) count4Star++;
-  }
-
-  const rate6 = count6Star / sampleSize;
-  const rate5 = count5Star / sampleSize;
-  const rate4 = count4Star / sampleSize;
-
-  console.log(`  样本数: ${sampleSize}`);
-  console.log(`  6星出现率: ${(rate6 * 100).toFixed(2)}% (期望: 0.80%)`);
-  console.log(`  5星出现率: ${(rate5 * 100).toFixed(2)}% (期望: 8.00%)`);
-  console.log(`  4星出现率: ${(rate4 * 100).toFixed(2)}% (期望: 91.20%)`);
-
-  // 允许±0.5%的误差
-  const tolerance = 0.005;
-  const is6StarCorrect = Math.abs(rate6 - 0.008) < tolerance;
-  const is5StarCorrect = Math.abs(rate5 - 0.08) < tolerance;
-  const is4StarCorrect = Math.abs(rate4 - 0.912) < tolerance;
-
-  if (is6StarCorrect && is5StarCorrect && is4StarCorrect) {
-    console.log('  ✓ 概率分布在允许误差范围内');
-  } else {
-    console.log('  ⚠ 概率分布存在偏差（可能是样本数不够或RNG问题）');
-  }
-}
-
-console.log('\n=== 测试完成 ===');
+      // 允许±0.5%的误差
+      const tolerance = 0.005;
+      expect(Math.abs(rate6 - 0.008)).toBeLessThan(tolerance);
+      expect(Math.abs(rate5 - 0.08)).toBeLessThan(tolerance);
+      expect(Math.abs(rate4 - 0.912)).toBeLessThan(tolerance);
+    });
+  });
+});

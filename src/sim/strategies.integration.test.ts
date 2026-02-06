@@ -3,7 +3,6 @@
  * 测试完整的策略执行流程
  */
 
-import { describe, it, expect } from 'vitest';
 import { createRng } from './rng';
 import {
   createDefaultStrategyConfig,
@@ -21,7 +20,7 @@ describe('策略集成测试', () => {
       const globalState = createInitialGlobalState();
 
       // 100抽 > 80（S1门槛），应该进入
-      const result = pullCharacterBanner(config, 100, 0, globalState, false, rng);
+      const result = pullCharacterBanner(config, 100, 0, globalState, false, false, false, rng);
 
       // 应该消耗了抽数
       expect(result.pullsSpent).toBeGreaterThan(0);
@@ -35,7 +34,7 @@ describe('策略集成测试', () => {
       const globalState = createInitialGlobalState();
 
       // 70抽 <= 80（S1门槛），不应该进入
-      const result = pullCharacterBanner(config, 70, 0, globalState, false, rng);
+      const result = pullCharacterBanner(config, 70, 0, globalState, false, false, false, rng);
 
       // 应该没有消耗抽数
       expect(result.pullsSpent).toBe(0);
@@ -48,11 +47,11 @@ describe('策略集成测试', () => {
       const globalState = createInitialGlobalState();
 
       // 100抽 <= 120（S2门槛），不应该进入
-      const result1 = pullCharacterBanner(config, 100, 0, globalState, false, rng);
+      const result1 = pullCharacterBanner(config, 100, 0, globalState, false, false, false, rng);
       expect(result1.pullsSpent).toBe(0);
 
       // 130抽 > 120（S2门槛），应该进入
-      const result2 = pullCharacterBanner(config, 130, 0, globalState, false, rng);
+      const result2 = pullCharacterBanner(config, 130, 0, globalState, false, false, false, rng);
       expect(result2.pullsSpent).toBeGreaterThan(0);
     });
 
@@ -69,6 +68,8 @@ describe('策略集成测试', () => {
           1000, // 充足的资源
           0,
           createInitialGlobalState(),
+          false,
+          false,
           false,
           createRng(`test-seed-gotup-${i}`)
         );
@@ -97,6 +98,8 @@ describe('策略集成测试', () => {
         0,
         globalState,
         true, // 有情报书
+        false,
+        false,
         rng
       );
 
@@ -195,8 +198,9 @@ describe('策略集成测试', () => {
 
       const result = executeStrategy(
         config,
-        200, // 初始抽数
-        1000, // 每版本武库配额
+        200, // initialPulls
+        0, // initialArsenal
+        1000, // arsenalPerVersion
         60, // 每版本抽数
         3, // 3个版本
         2, // 每版本2个卡池
@@ -218,8 +222,9 @@ describe('策略集成测试', () => {
 
       const result = executeStrategy(
         config,
-        300, // 更多初始抽数
-        1500, // 每版本武库配额
+        300, // initialPulls
+        0, // initialArsenal
+        1500, // arsenalPerVersion
         80, // 每版本抽数
         4, // 4个版本
         2, // 每版本2个卡池
@@ -267,11 +272,12 @@ describe('策略集成测试', () => {
 
       const result = executeStrategy(
         config,
-        0, // 初始没有抽数
-        0, // 每版本也没有武库配额
-        100, // 但每版本会发放100抽
-        2, // 2个版本
-        1, // 每版本1个卡池
+        0, // initialPulls - 初始没有抽数
+        0, // initialArsenal - 初始没有武库配额
+        0, // arsenalPerVersion - 每版本没有武库配额
+        100, // pullsPerVersion - 但每版本会发放100抽
+        2, // versionCount - 2个版本
+        1, // bannersPerVersion - 每版本1个卡池
         rng
       );
 
@@ -289,8 +295,9 @@ describe('策略集成测试', () => {
       for (let i = 0; i < 20 && !foundWeapon; i++) {
         const result = executeStrategy(
           config,
-          300, // 充足的抽数
-          5000, // 充足的武库配额
+          300, // initialPulls
+          0, // initialArsenal
+          5000, // arsenalPerVersion
           100,
           3,
           2,
@@ -311,7 +318,7 @@ describe('策略集成测试', () => {
       const rng = createRng('test-edge-1');
       const config = createDefaultStrategyConfig('S1');
 
-      const result = executeStrategy(config, 0, 0, 0, 1, 1, rng);
+      const result = executeStrategy(config, 0, 0, 0, 0, 1, 1, rng);
 
       expect(result.obtainedCharacterCount).toBe(0);
       expect(result.obtainedWeaponCount).toBe(0);
