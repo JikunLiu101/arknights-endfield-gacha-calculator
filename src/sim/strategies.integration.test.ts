@@ -20,7 +20,7 @@ describe('策略集成测试', () => {
       const config = createDefaultStrategyConfig('S1');
       const globalState = createInitialGlobalState();
 
-      // 100抽 > 80（S1阈值），应该进入
+      // 100抽 > 80（S1门槛），应该进入
       const result = pullCharacterBanner(config, 100, 0, globalState, false, rng);
 
       // 应该消耗了抽数
@@ -34,7 +34,7 @@ describe('策略集成测试', () => {
       const config = createDefaultStrategyConfig('S1');
       const globalState = createInitialGlobalState();
 
-      // 70抽 <= 80（S1阈值），不应该进入
+      // 70抽 <= 80（S1门槛），不应该进入
       const result = pullCharacterBanner(config, 70, 0, globalState, false, rng);
 
       // 应该没有消耗抽数
@@ -47,11 +47,11 @@ describe('策略集成测试', () => {
       const config = createDefaultStrategyConfig('S2');
       const globalState = createInitialGlobalState();
 
-      // 100抽 <= 120（S2阈值），不应该进入
+      // 100抽 <= 120（S2门槛），不应该进入
       const result1 = pullCharacterBanner(config, 100, 0, globalState, false, rng);
       expect(result1.pullsSpent).toBe(0);
 
-      // 130抽 > 120（S2阈值），应该进入
+      // 130抽 > 120（S2门槛），应该进入
       const result2 = pullCharacterBanner(config, 130, 0, globalState, false, rng);
       expect(result2.pullsSpent).toBeGreaterThan(0);
     });
@@ -276,7 +276,7 @@ describe('策略集成测试', () => {
       );
 
       // 尽管初始没有抽数，但版本开始时会发放，所以应该能抽卡
-      // 第一个版本开始时发放100抽，满足S1的80抽阈值
+      // 第一个版本开始时发放100抽，满足S1的80抽门槛
       expect(result.totalPullsSpent).toBeGreaterThan(0);
     });
 

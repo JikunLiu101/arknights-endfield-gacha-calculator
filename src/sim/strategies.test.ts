@@ -41,21 +41,21 @@ console.log('测试1: 基础策略配置');
   const s2 = BASE_STRATEGIES.S2;
 
   if (s1.characterBannerThreshold === 80) {
-    testPass('S1 阈值为 80');
+    testPass('S1 门槛为 80');
   } else {
-    testFail('S1 阈值为 80', 80, s1.characterBannerThreshold);
+    testFail('S1 门槛为 80', 80, s1.characterBannerThreshold);
   }
 
   if (s2.characterBannerThreshold === 120) {
-    testPass('S2 阈值为 120');
+    testPass('S2 门槛为 120');
   } else {
-    testFail('S2 阈值为 120', 120, s2.characterBannerThreshold);
+    testFail('S2 门槛为 120', 120, s2.characterBannerThreshold);
   }
 
   if (s1.weaponBannerThreshold === 15840) {
-    testPass('武器池阈值为 15840');
+    testPass('武器池门槛为 15840');
   } else {
-    testFail('武器池阈值为 15840', 15840, s1.weaponBannerThreshold);
+    testFail('武器池门槛为 15840', 15840, s1.weaponBannerThreshold);
   }
 }
 

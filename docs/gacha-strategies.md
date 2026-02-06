@@ -42,8 +42,8 @@
 策略分为两个层级：
 
 ### 1. 基础策略（必选其一）
-- **策略一：保底派（S1）** - 80抽阈值
-- **策略二：井派（S2）** - 120抽阈值
+- **策略一：保底派（S1）** - 80抽门槛
+- **策略二：井派（S2）** - 120抽门槛
 
 ### 2. 附加策略（可选、可多选）
 - **附加策略一：永远使用情报书** - 默认开启
@@ -380,7 +380,7 @@ function pullCharacterBanner_withA1(
    - `threshold` = 80（保底派）或 120（井派）
    - `bannerBonus` = 10（卡池赠送抽数）
 
-2. **下个版本后预计超出阈值一定量**
+2. **下个版本后预计超出门槛一定量**
    ```
    (currentPulls + bannerBonus + intelReport + pullsNextVersion) > (threshold + 20/10)
    ```
@@ -488,7 +488,7 @@ surplus = 100 + 0 + 80 - 120 = 60 > 30 ✓
    currentPulls + bannerBonus <= threshold
    ```
 
-2. **下个版本后预计超出阈值一定量**
+2. **下个版本后预计超出门槛一定量**
    ```
    (currentPulls + bannerBonus + intelReport + pullsNextVersion) > (threshold + 50/40)
    ```
@@ -614,301 +614,102 @@ if (enableA3 && triggersA3Condition()) {
 
 ---
 
+## 附加策略四：最后版本用光所有资源
+
+**策略ID**: `A4`
+**策略名称**: 最后版本用光所有资源
+**默认状态**: 关闭
+**优先级**: 最高（在所有策略判断之前）
+
+### 功能描述
+
+在规划的**最后一个版本**的**最后一个卡池**，如果启用 A4 策略且有剩余抽数，会强制进入该卡池并用光所有剩余抽数，不留盈余。
+
+### 触发条件
+
+满足以下**所有**条件时触发：
+1. A4 策略已启用
+2. 当前为最后一个版本
+3. 当前为该版本的最后一个卡池
+4. 有剩余抽数（> 0）
+
+### 行为逻辑
+
+当 A4 触发时：
+- **强制进入卡池**：即使不满足基础策略的进入门槛（>80抽或>120抽）
+- **用光所有抽数**：使用全部剩余抽数
+- **持续抽卡**：直到获得UP角色或抽数耗尽
+
+### 优先级说明
+
+A4 策略的优先级**最高**，在策略判断流程中排在第一位：
+
+```
+优先级顺序：
+0. A4：最后版本用光资源（最高优先级）
+1. 基础策略进入条件（>80抽或>120抽）
+2. A3：凑情报书
+3. A2：凑加急寻访
+```
+
+### 使用场景
+
+#### 适合使用 A4 的情况：
+- **追求收益最大化**：不想浪费任何资源，即使风险较高也要用完所有抽数
+- **规划已到尽头**：确定规划的版本数后不会再增加
+- **宁可赌一把**：哪怕抽数不足80/120抽，也想试试运气
+
+#### 不适合使用 A4 的情况：
+- **保守型玩家**：希望保留盈余，避免浪费在低价值卡池上
+- **规划可能延长**：后续可能增加规划版本数
+- **追求稳定性**：只想在满足进入条件时才抽卡
+
+### 示例
+
+#### 示例 1：A4 开启
+```
+规划：3个版本，每版本2个卡池
+基础策略：S1（保底派，>80抽进入）
+当前状态：最后版本的最后一个卡池，剩余50抽
+
+结果：
+- A4 触发 ✓
+- 即使只有50抽（<80抽），仍然进入卡池
+- 用光所有50抽
+```
+
+#### 示例 2：A4 关闭
+```
+规划：3个版本，每版本2个卡池
+基础策略：S1（保底派，>80抽进入）
+当前状态：最后版本的最后一个卡池，剩余50抽
+
+结果：
+- A4 未启用 ✗
+- 检查基础策略：50抽 < 80抽，不满足进入条件
+- 不进入卡池，保留50抽
+```
+
+---
+
 ## 附加策略对比总结
 
-| 维度 | A1: 永远使用情报书和赠送抽数 | A2: 凑加急 | A3: 凑情报书 |
-|------|---------------------------|----------|------------|
-| **默认状态** | 开启 | 关闭 | 关闭 |
-| **触发条件** | 有情报书或卡池赠送抽数 | 当前不足 + 盈余>20/10 | 当前不足 + 盈余>50/40 |
-| **抽卡量（库存）** | 0（全部免费） | 20/10抽 | 50/40抽 |
-| **卡池赠送10抽** | ✓ 优先使用 | ✓ 抵扣消耗 | ✓ 抵扣消耗 |
-| **触发加急** | - | ✓（30抽） | ✓（30抽） |
-| **触发情报书** | - | ✗ | ✓（60抽） |
-| **核心收益** | 省10抽 | 赚武库配额 | 赚配额+下池情报书 |
-| **武器池抽取** | - | 有6星限定时 | 有6星限定时 |
-
----
-
-## 实现架构设计
-
-### 1. 策略接口定义
-
-```typescript
-// src/sim/types.ts
-
-/**
- * 基础策略ID
- */
-export type BaseStrategyId = 'S1' | 'S2';
-
-/**
- * 附加策略ID
- */
-export type AddonStrategyId = 'A1' | 'A2' | 'A3';
-
-/**
- * 策略配置
- */
-export type StrategyConfig = {
-  // 基础策略
-  baseStrategy: BaseStrategyId;
-  characterBannerThreshold: number; // 角色池进入门槛（80 or 120）
-  weaponBannerThreshold: number;    // 武器池进入门槛（武库配额，默认15840）
-
-  // 附加策略（可选、可多选）
-  addonStrategies: {
-    A1_alwaysUseIntelReport: boolean;   // 永远使用情报书（默认true）
-    A2_pullForFastTrack: boolean;       // 凑加急寻访（默认false）
-    A3_pullForIntelReport: boolean;     // 凑情报书（默认false）
-  };
-};
-
-/**
- * 策略执行结果
- */
-export type StrategyResult = {
-  obtainedCharacters: Set<string>;  // 获得的UP角色ID集合
-  obtainedWeapons: Set<string>;     // 获得的UP专武ID集合
-  totalPullsSpent: number;          // 总消耗抽数
-  totalArsenalSpent: number;        // 总消耗武库配额
-  remainingPulls: number;           // 剩余抽数
-  remainingArsenal: number;         // 剩余武库配额
-  bannerOutcomes: BannerOutcome[];  // 每个卡池的详细结果
-};
-```
-
-### 2. 策略常量配置
-
-```typescript
-// src/sim/strategies.ts
-
-/**
- * 基础策略配置
- */
-export const BASE_STRATEGIES = {
-  S1: {
-    id: 'S1' as const,
-    name: '保底派',
-    characterBannerThreshold: 80,
-    weaponBannerThreshold: 15840, // 8 × 1980
-  },
-  S2: {
-    id: 'S2' as const,
-    name: '井派',
-    characterBannerThreshold: 120,
-    weaponBannerThreshold: 15840, // 8 × 1980
-  },
-};
-
-/**
- * 附加策略配置
- */
-export const ADDON_STRATEGIES = {
-  A1: {
-    id: 'A1' as const,
-    name: '永远使用情报书',
-    defaultEnabled: true,
-  },
-  A2: {
-    id: 'A2' as const,
-    name: '凑加急寻访',
-    defaultEnabled: false,
-  },
-  A3: {
-    id: 'A3' as const,
-    name: '凑情报书',
-    defaultEnabled: false,
-  },
-};
-
-/**
- * 创建默认策略配置
- */
-export function createDefaultStrategyConfig(baseStrategyId: BaseStrategyId): StrategyConfig {
-  const baseStrategy = BASE_STRATEGIES[baseStrategyId];
-
-  return {
-    baseStrategy: baseStrategyId,
-    characterBannerThreshold: baseStrategy.characterBannerThreshold,
-    weaponBannerThreshold: baseStrategy.weaponBannerThreshold,
-    addonStrategies: {
-      A1_alwaysUseIntelReport: true,   // 默认开启
-      A2_pullForFastTrack: false,      // 默认关闭
-      A3_pullForIntelReport: false,    // 默认关闭
-    },
-  };
-}
-```
-
-### 3. 核心执行流程
-
-```typescript
-// src/sim/strategies.ts
-
-export function executeStrategy(
-  strategyId: StrategyId,
-  banners: Banner[],
-  initialPulls: number,
-  rng: RNG
-): StrategyResult {
-  const config = STRATEGIES[strategyId];
-
-  let currentPulls = initialPulls;
-  let globalState = createInitialGlobalState();
-  let ownedCharacters = new Set<string>();
-  let ownedWeapons = new Set<string>();
-  let pendingIntelReport: IntelReport | null = null;
-
-  // 按卡池顺序逐个处理
-  for (const banner of banners) {
-    if (banner.type === 'character') {
-      // 角色池逻辑
-      const outcome = pullCharacterBanner(
-        banner,
-        currentPulls,
-        globalState,
-        pendingIntelReport,
-        config
-      );
-
-      currentPulls -= outcome.pullsSpent;
-      globalState = outcome.finalGlobalState;
-      pendingIntelReport = outcome.generatedIntelReport;
-
-      if (outcome.gotRateUp) {
-        ownedCharacters.add(banner.rateUpCharacterId);
-      }
-    } else if (banner.type === 'weapon') {
-      // 武器池逻辑
-      const eligibleBanners = getEligibleWeaponBanners(
-        weaponBanners,
-        ownedCharacters,
-        globalState.arsenalPoints,
-        config
-      );
-
-      if (eligibleBanners.length > 0) {
-        const selectedBanner = selectWeaponBanner(eligibleBanners, ownedCharacters);
-        const outcome = claimWeaponBanner(selectedBanner, globalState, config);
-
-        globalState.arsenalPoints -= outcome.arsenalSpent;
-
-        if (outcome.gotRateUp) {
-          ownedWeapons.add(selectedBanner.rateUpWeaponId);
-        }
-      }
-    }
-  }
-
-  return {
-    obtainedCharacters,
-    obtainedWeapons,
-    totalPullsSpent: initialPulls - currentPulls,
-    totalArsenalSpent: /* calculate */,
-    remainingPulls: currentPulls,
-    remainingArsenal: globalState.arsenalPoints,
-    bannerOutcomes: /* collect */,
-  };
-}
-```
-
----
-
-## 关键实现要点
-
-### 1. 进入条件检查
-
-**必须在每个卡池开始前检查**，而不是在抽卡过程中：
-
-```typescript
-// ✗ 错误：在循环中检查
-while (currentPulls > threshold && !gotRateUp) {
-  // 这样会导致抽到一半时资源不足停止
-}
-
-// ✓ 正确：进入前检查
-if (currentPulls <= threshold) {
-  return; // 不进入此池
-}
-while (currentPulls > 0 && !gotRateUp) {
-  // 一旦进入，持续抽到UP或抽数耗尽
-}
-```
-
-### 2. 加急招募和情报书的触发时机
-
-- **加急招募**：在 `pullsInBanner === 30` 时触发
-- **情报书**：在 `pullsInBanner === 60` 时触发
-- 需要维护 `bannerState.pullsInBanner` 计数器
-
-### 3. 武器池的优先级排序
-
-必须同时考虑：
-1. 是否有对应角色（布尔值，优先级最高）
-2. 结束时间（数值，次优先级）
-
-### 4. 状态继承
-
-- **全局状态**（`GlobalGachaState`）：跨卡池继承
-  - `pityCounter`：保底计数器
-  - `arsenalPoints`：武库配额
-- **卡池状态**（`BannerState`）：每个卡池独立
-  - `sparkCounter`：井计数器（切池重置）
-  - `pullsInBanner`：本池抽数（切池重置）
-
----
-
-## 后续扩展策略
-
-### 策略三：平衡派（待定）
-- 可能的思路：在保底派和井派之间取平衡，例如 > 100抽进入
-
-### 策略四：激进派（待定）
-- 可能的思路：只要有抽数就进入，追求覆盖率最大化
-
-### 策略五：定制派（用户自定义）
-- 允许用户指定每个卡池的进入条件和抽卡策略
-
----
-
-## 测试策略
-
-### 单元测试
-
-1. **策略配置验证**
-   - 验证 S1 的门槛是 80
-   - 验证 S2 的门槛是 120
-
-2. **进入条件测试**
-   - 79抽时不进入 S1 角色池
-   - 80抽时不进入 S1 角色池（> 80 才进入）
-   - 81抽时进入 S1 角色池
-
-3. **退出条件测试**
-   - 获得UP后立即停止
-   - 抽数耗尽后停止
-
-### 集成测试
-
-1. **完整模拟流程**
-   - 初始200抽 + 每版本60抽 × 3版本 = 380抽
-   - 执行 S1 策略，验证角色和武器获取情况
-
-2. **多池场景**
-   - 3个角色池 + 2个武器池并存
-   - 验证优先级排序和资源分配
-
-### 概率验证测试
-
-1. **大样本测试**
-   - 运行10000次trial
-   - 统计成功率、平均消耗等指标
-   - 验证是否符合理论预期
+| 维度 | A1: 永远使用情报书和赠送抽数 | A2: 凑加急 | A3: 凑情报书 | A4: 最后版本用光 |
+|------|---------------------------|----------|------------|----------------|
+| **默认状态** | 开启 | 关闭 | 关闭 | 关闭 |
+| **触发条件** | 有情报书或卡池赠送抽数 | 当前不足 + 盈余>20/10 | 当前不足 + 盈余>50/40 | 最后版本最后卡池 + 有余抽 |
+| **抽卡量（库存）** | 0（全部免费） | 20/10抽 | 50/40抽 | 全部剩余 |
+| **卡池赠送10抽** | ✓ 优先使用 | ✓ 抵扣消耗 | ✓ 抵扣消耗 | ✓ 正常使用 |
+| **触发加急** | - | ✓（30抽） | ✓（30抽） | 可能触发 |
+| **触发情报书** | - | ✗ | ✓（60抽） | 可能触发 |
+| **核心收益** | 省10抽 | 赚武库配额 | 赚配额+下池情报书 | 不浪费资源 |
+| **武器池抽取** | - | 有6星限定时 | 有6星限定时 | 依基础策略 |
+| **进入门槛要求** | - | 无视门槛 | 无视门槛 | 无视门槛 |
 
 ---
 
 ## 文档版本
 
-- **版本**: 1.0
+- **版本**: 1.1
 - **最后更新**: 2026-02-06
 - **作者**: Claude + User

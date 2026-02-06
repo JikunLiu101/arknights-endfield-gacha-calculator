@@ -21,10 +21,10 @@ const PROB_5_STAR = 0.15;
 /** UP专武占6星概率的比例 */
 const RATE_UP_RATIO = 0.25;
 
-/** 保底触发阈值（连续3次申领未出6星后触发） */
+/** 保底触发门槛（连续3次申领未出6星后触发） */
 const WEAPON_PITY_THRESHOLD = 3;
 
-/** 井触发阈值（第8次申领强制UP） */
+/** 井触发门槛（第8次申领强制UP） */
 const WEAPON_SPARK_THRESHOLD = 7;
 
 /** 每次申领的抽数 */

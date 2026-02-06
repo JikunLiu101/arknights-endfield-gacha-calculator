@@ -20,24 +20,24 @@ const PROB_6_STAR_BASE = 0.008;
 const PROB_5_STAR = 0.08;
 // Note: 4星基础概率 = 0.912 (not used in implementation)
 
-/** 保底触发阈值（连续65次未出6星后触发） */
+/** 保底触发门槛（连续65次未出6星后触发） */
 const PITY_THRESHOLD = 65;
-/** 硬保底阈值（第80次必定6星） */
+/** 硬保底门槛（第80次必定6星） */
 const HARD_PITY_THRESHOLD = 80;
 /** 保底每抽增加的概率 */
 const PITY_INCREMENT_PER_PULL = 0.05;
 
-/** 井触发阈值（第120次抽取强制UP） */
+/** 井触发门槛（第120次抽取强制UP） */
 const SPARK_THRESHOLD = 120;
 
 /** UP角色占6星概率的比例 */
 const RATE_UP_RATIO = 0.5;
 
-// Note: 加急招募触发阈值 = 30 (handled in strategy layer)
+// Note: 加急招募触发门槛 = 30 (handled in strategy layer)
 /** 加急招募抽数 */
 const FAST_TRACK_PULLS = 10;
 
-// Note: 寻访情报书触发阈值 = 60 (handled in strategy layer)
+// Note: 寻访情报书触发门槛 = 60 (handled in strategy layer)
 
 /** 武库配额 */
 const ARSENAL_POINTS = {

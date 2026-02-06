@@ -115,7 +115,7 @@ export function getStrategyName(config: StrategyConfig): string {
  *
  * @param currentPulls 当前库存抽数（不含卡池赠送）
  * @param pullsNextVersion 下个版本抽数
- * @param threshold 基础策略阈值（80 or 120）
+ * @param threshold 基础策略门槛（80 or 120）
  * @param hasIntelReport 是否有情报书
  * @returns 是否触发附加策略二
  */
@@ -158,7 +158,7 @@ export function getAddonA2PullCost(hasIntelReport: boolean): number {
  *
  * @param currentPulls 当前库存抽数（不含卡池赠送）
  * @param pullsNextVersion 下个版本抽数
- * @param threshold 基础策略阈值（80 or 120）
+ * @param threshold 基础策略门槛（80 or 120）
  * @param hasIntelReport 是否有情报书
  * @returns 是否触发附加策略三
  */
@@ -199,7 +199,7 @@ export function getAddonA3PullCost(hasIntelReport: boolean): number {
  * 判断是否满足基础策略的进入条件
  *
  * @param currentPulls 当前库存抽数
- * @param threshold 基础策略阈值（80 or 120）
+ * @param threshold 基础策略门槛（80 or 120）
  * @returns 是否满足进入条件
  */
 export function canEnterCharacterBanner(
