@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/sim/defaults.ts","./src/sim/engine.ts","./src/sim/rng.ts","./src/sim/sim.worker.ts","./src/sim/types.ts"],"version":"5.9.3"}
