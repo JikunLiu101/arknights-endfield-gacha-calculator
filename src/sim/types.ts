@@ -60,6 +60,7 @@ export type SimOutput = {
   avgCharactersObtained: number; // 期望获得的不重复6星限定角色数量
   medianCharactersObtained: number; // 限定角色获取中位数
   characterDistribution: { count: number; percentage: number }[]; // 角色获取分布
+  characterMedianSummary: string; // 角色中位数总结
   characterCumulativeSummary: string; // 角色累加总结（"超过X%的玩家可以获得Y个限定角色"）
 
   // 专武统计
@@ -67,6 +68,7 @@ export type SimOutput = {
   avgWeaponsObtained: number; // 期望获得的专武数量
   medianWeaponsObtained: number; // 专武获取中位数
   weaponDistribution: { count: number; percentage: number }[]; // 专武获取分布
+  weaponMedianSummary: string; // 专武中位数总结
   weaponCumulativeSummary: string; // 专武累加总结
 
   // 旧字段（保持向后兼容）

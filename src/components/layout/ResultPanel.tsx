@@ -174,6 +174,9 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <p className="text-sm font-medium text-amber-900">
+              {result.characterMedianSummary}
+            </p>
+            <p className="text-sm font-medium text-amber-900">
               {result.characterCumulativeSummary}
             </p>
           </div>
@@ -212,6 +215,9 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
           </ResponsiveContainer>
 
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-sm font-medium text-green-900">
+              {result.weaponMedianSummary}
+            </p>
             <p className="text-sm font-medium text-green-900">
               {result.weaponCumulativeSummary}
             </p>

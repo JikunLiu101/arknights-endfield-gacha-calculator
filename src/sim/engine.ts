@@ -155,6 +155,7 @@ export function runSimulation(
     charThresholdCount = count;
     if (charCumulative >= 75) break;
   }
+  const characterMedianSummary = `玩家获取限定角色的中位数为${medianCharactersObtained}个`;
   const characterCumulativeSummary = `超过${charCumulative.toFixed(1)}%的玩家可以获得${charThresholdCount}个限定角色`;
 
   // 计算专武累加总结
@@ -165,6 +166,7 @@ export function runSimulation(
     weaponThresholdCount = count;
     if (weaponCumulative >= 75) break;
   }
+  const weaponMedianSummary = `玩家获取专武的中位数为${medianWeaponsObtained}个`
   const weaponCumulativeSummary = `超过${weaponCumulative.toFixed(1)}%的玩家可以获得${weaponThresholdCount}个专武`;
 
   // 对于成功率，我们定义为"获得至少1个角色"的概率
@@ -183,6 +185,7 @@ export function runSimulation(
     avgCharactersObtained: avgCharacterCount,
     medianCharactersObtained,
     characterDistribution,
+    characterMedianSummary,
     characterCumulativeSummary,
 
     // 专武统计
@@ -190,6 +193,7 @@ export function runSimulation(
     avgWeaponsObtained: avgWeaponCount,
     medianWeaponsObtained,
     weaponDistribution,
+    weaponMedianSummary,
     weaponCumulativeSummary,
 
     // 旧字段（保持向后兼容）
