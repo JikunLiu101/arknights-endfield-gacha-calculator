@@ -68,7 +68,7 @@ export function Header() {
 
             <div className="text-center">
               <img
-                src="src/other/buymeacoffee.jpg"
+                src="/buymeacoffee.jpg"
                 alt="Buy Me A Coffee"
                 className="max-w-full h-auto rounded-lg border border-gray-200"
               />
