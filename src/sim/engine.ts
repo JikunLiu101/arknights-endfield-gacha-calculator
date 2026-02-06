@@ -22,6 +22,7 @@ export function runSimulation(
   // 验证和标准化输入
   const totalTrials = Math.max(1, Math.floor(input.trials));
   const currentPulls = Math.max(0, Math.floor(input.currentPulls));
+  const currentArsenal = Math.max(0, Math.floor(input.currentArsenal));
   const pullsPerVersion = Math.max(0, Math.floor(input.pullsPerVersion));
   const arsenalPerVersion = Math.max(0, Math.floor(input.arsenalPerVersion));
   const versionCount = Math.max(1, Math.floor(input.versionCount));
@@ -39,6 +40,7 @@ export function runSimulation(
     const result = executeStrategy(
       strategyConfig,
       currentPulls,
+      currentArsenal,
       arsenalPerVersion,
       pullsPerVersion,
       versionCount,
@@ -64,6 +66,7 @@ export function runSimulation(
   const weaponCounts = results.map((r) => r.obtainedWeaponCount);
   const pullsSpent = results.map((r) => r.totalPullsSpent);
   const arsenalSpent = results.map((r) => r.totalArsenalSpent);
+  const arsenalRemaining = results.map((r) => r.remainingArsenal);
 
   // 计算总卡池数
   const totalBanners = versionCount * bannersPerVersion;
@@ -91,9 +94,13 @@ export function runSimulation(
   const avgArsenalSpent = arsenalSpent.reduce((sum, v) => sum + v, 0) / totalTrials;
   const avgArsenalClaims = avgArsenalSpent / 1980;
 
+  // 计算平均剩余武库配额
+  const avgArsenalRemaining = arsenalRemaining.reduce((sum, v) => sum + v, 0) / totalTrials;
+
   // 计算总资源（初始 + 规划期间获取）
   const totalPulls = currentPulls + pullsPerVersion * versionCount;
-  const totalArsenal = arsenalPerVersion * versionCount;
+  // 武库配额总计应该是：平均花费 + 平均剩余
+  const totalArsenal = avgArsenalSpent + avgArsenalRemaining;
 
   // 计算分位数（以消耗抽数为基准）
   const sortedPulls = [...pullsSpent].sort((a, b) => a - b);

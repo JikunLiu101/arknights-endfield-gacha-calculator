@@ -134,8 +134,9 @@ function bind() {
   const updateInput = () => {
     input = {
       currentPulls: getNumber('currentPulls', 0),
+      currentArsenal: 0, // 固定值,后续可以添加到表单
       pullsPerVersion: getNumber('pullsPerVersion', 0),
-      arsenalPerVersion: 1000, // 先用固定值,后续可以添加到表单
+      arsenalPerVersion: 1980, // 固定值,后续可以添加到表单
       versionCount: getNumber('versionCount', 1),
       bannersPerVersion: getNumber('bannersPerVersion', 1),
       strategyId: getSelect('strategyId') as SimInput['strategyId'],

@@ -44,8 +44,8 @@ export function PlanningInputs({
         onChange={(value) => onChange('pullsPerVersion', value)}
         min={0}
         step={1}
-        placeholder="50"
-        description="每个版本预计可获得的角色抽数（计算版本福利、每日、活动等获得的通用角色抽数）"
+        placeholder="80"
+        description="每个版本预计可获得的角色抽数（不含指定了某个卡池才能使用的角色抽数，只计算版本福利、每日、活动等获得的通用角色抽数）"
         error={errors.pullsPerVersion}
         disabled={disabled}
       />
@@ -54,12 +54,12 @@ export function PlanningInputs({
         <div className="flex gap-2">
           <div className="flex-1">
             <NumberInput
-              label="每版本获得武库配额"
+              label={`每版本获得武库配额 （目前约${(arsenalPerVersion / 1980).toFixed(2)}次申领）`}
               value={arsenalPerVersion}
               onChange={(value) => onChange('arsenalPerVersion', value)}
               min={0}
               step={100}
-              placeholder="1000"
+              placeholder="1980"
               description="每个版本预计可获得的武库配额（计算版本福利、每日、活动等获得的武库配额）"
               error={errors.arsenalPerVersion}
               disabled={disabled}

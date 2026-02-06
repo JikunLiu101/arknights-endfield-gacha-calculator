@@ -595,6 +595,7 @@ export type StrategyExecutionResult = {
 export function executeStrategy(
   config: StrategyConfig,
   initialPulls: number,
+  initialArsenal: number,
   arsenalPerVersion: number,
   pullsPerVersion: number,
   versionCount: number,
@@ -604,6 +605,7 @@ export function executeStrategy(
   // 初始化资源和状态
   let currentPulls = initialPulls;
   let globalState = createInitialGlobalState();
+  globalState.arsenalPoints = initialArsenal; // 设置初始武库配额
   let hasIntelReport = false;
   let obtainedCharacterCount = 0;
   let obtainedWeaponCount = 0;

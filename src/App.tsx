@@ -40,6 +40,7 @@ export function App() {
     // Build SimInput from state
     const input: SimInput = {
       currentPulls: state.currentPulls,
+      currentArsenal: state.currentArsenal,
       pullsPerVersion: state.pullsPerVersion,
       arsenalPerVersion: state.arsenalPerVersion,
       versionCount: state.versionCount,

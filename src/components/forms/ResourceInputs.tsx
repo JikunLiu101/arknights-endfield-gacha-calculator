@@ -42,7 +42,7 @@ export function ResourceInputs({
         <div className="flex gap-2">
           <div className="flex-1">
             <NumberInput
-              label="当前武库配额"
+              label={`当前武库配额 （目前约${(currentArsenal / 1980).toFixed(2)}次申领）`}
               value={currentArsenal}
               onChange={(value) => onChange('currentArsenal', value)}
               min={0}

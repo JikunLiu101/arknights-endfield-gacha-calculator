@@ -35,12 +35,13 @@ export type StrategyId = BaseStrategyId;
 
 export type SimInput = {
   currentPulls: number;
+  currentArsenal: number; // 当前武库配额
   pullsPerVersion: number;
-  arsenalPerVersion: number; // 新增：每版本武库配额
+  arsenalPerVersion: number; // 每版本武库配额
   versionCount: number;
   bannersPerVersion: number;
   strategyId: BaseStrategyId;
-  strategyConfig?: StrategyConfig; // 新增：完整策略配置（可选）
+  strategyConfig?: StrategyConfig; // 完整策略配置（可选）
   trials: number;
   seed: string | null;
 };

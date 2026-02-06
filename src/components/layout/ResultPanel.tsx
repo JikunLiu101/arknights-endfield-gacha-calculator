@@ -59,7 +59,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
-              抽数总计（初始+获取）
+              抽数总计
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {result.totalPulls.toLocaleString()}
@@ -68,7 +68,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
 
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
-              武库配额总计（获取）
+              武库配额总计
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {result.totalArsenal.toLocaleString()}
