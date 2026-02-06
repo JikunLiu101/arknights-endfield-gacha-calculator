@@ -10,7 +10,7 @@ import type {
   PullResult,
   FastTrackResult,
 } from './types';
-import type { RNG } from './rng';
+import type { Rng } from './rng';
 
 // ============ 常量定义 ============
 
@@ -76,7 +76,7 @@ function getSixStarProb(pityCounter: number): number {
 /**
  * 根据概率抽取稀有度
  */
-function rollRarity(rng: RNG, prob6Star: number): 6 | 5 | 4 {
+function rollRarity(rng: Rng, prob6Star: number): 6 | 5 | 4 {
   const r = rng.nextFloat();
   if (r < prob6Star) return 6;
   if (r < prob6Star + PROB_5_STAR) return 5;
@@ -86,7 +86,7 @@ function rollRarity(rng: RNG, prob6Star: number): 6 | 5 | 4 {
 /**
  * 判断6星是否为UP角色
  */
-function isRateUpSixStar(rng: RNG): boolean {
+function isRateUpSixStar(rng: Rng): boolean {
   return rng.nextFloat() < RATE_UP_RATIO;
 }
 
@@ -104,7 +104,7 @@ function isRateUpSixStar(rng: RNG): boolean {
 export function simulateSinglePull(
   globalState: GlobalGachaState,
   bannerState: BannerState,
-  rng: RNG,
+  rng: Rng,
   isFromFastTrack: boolean = false
 ): {
   result: PullResult;
@@ -209,7 +209,7 @@ export function simulateSinglePull(
  */
 export function simulateFastTrack(
   globalState: GlobalGachaState,
-  rng: RNG
+  rng: Rng
 ): {
   result: FastTrackResult;
   newGlobalState: GlobalGachaState;

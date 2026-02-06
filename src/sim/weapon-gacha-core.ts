@@ -9,7 +9,7 @@ import type {
   WeaponPullResult,
   WeaponClaimResult,
 } from './types';
-import type { RNG } from './rng';
+import type { Rng } from './rng';
 
 // ============ 常量定义 ============
 
@@ -17,8 +17,6 @@ import type { RNG } from './rng';
 const PROB_6_STAR = 0.04;
 /** 5星基础概率 */
 const PROB_5_STAR = 0.15;
-/** 4星基础概率 */
-const PROB_4_STAR = 0.81;
 
 /** UP专武占6星概率的比例 */
 const RATE_UP_RATIO = 0.25;
@@ -40,7 +38,7 @@ export const ARSENAL_COST_PER_CLAIM = 1980;
 /**
  * 根据概率抽取武器稀有度
  */
-function rollWeaponRarity(rng: RNG): 6 | 5 | 4 {
+function rollWeaponRarity(rng: Rng): 6 | 5 | 4 {
   const r = rng.nextFloat();
   if (r < PROB_6_STAR) return 6;
   if (r < PROB_6_STAR + PROB_5_STAR) return 5;
@@ -50,7 +48,7 @@ function rollWeaponRarity(rng: RNG): 6 | 5 | 4 {
 /**
  * 判断6星武器是否为UP专武
  */
-function isRateUpWeapon(rng: RNG): boolean {
+function isRateUpWeapon(rng: Rng): boolean {
   return rng.nextFloat() < RATE_UP_RATIO;
 }
 
@@ -67,7 +65,7 @@ function isRateUpWeapon(rng: RNG): boolean {
  */
 export function simulateWeaponSinglePull(
   weaponBannerState: WeaponBannerState,
-  rng: RNG,
+  rng: Rng,
   isLastPullOfClaim: boolean,
   guaranteeType: 'spark' | 'pity' | null
 ): {
@@ -142,7 +140,7 @@ export function simulateWeaponSinglePull(
  */
 export function simulateWeaponClaim(
   weaponBannerState: WeaponBannerState,
-  rng: RNG
+  rng: Rng
 ): {
   result: WeaponClaimResult;
   newWeaponBannerState: WeaponBannerState;

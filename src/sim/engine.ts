@@ -1,59 +1,111 @@
 import type { SimInput, SimOutput } from './types';
 import { createRng } from './rng';
+import {
+  createDefaultStrategyConfig,
+  executeStrategy,
+  type StrategyExecutionResult,
+} from './strategies';
 
-// 占位模拟引擎：先用一个“固定成功率 + 预算相关”的简化模型跑通 UI/Worker。
-// 后续你提供固定卡池机制与策略细节后，将这里替换为真实的 gachaModel + strategy runner。
-
-export function runSimulation(input: SimInput, onProgress?: (done: number, total: number) => void): SimOutput {
+/**
+ * 运行完整的蒙特卡洛模拟
+ *
+ * @param input 模拟输入参数
+ * @param onProgress 进度回调函数
+ * @returns 模拟输出结果
+ */
+export function runSimulation(
+  input: SimInput,
+  onProgress?: (done: number, total: number) => void
+): SimOutput {
   const rng = createRng(input.seed);
 
+  // 验证和标准化输入
   const totalTrials = Math.max(1, Math.floor(input.trials));
-  const pullsBudget =
-    Math.max(0, Math.floor(input.currentPulls)) +
-    Math.max(0, Math.floor(input.pullsPerVersion)) * Math.max(0, Math.floor(input.versionCount));
+  const currentPulls = Math.max(0, Math.floor(input.currentPulls));
+  const pullsPerVersion = Math.max(0, Math.floor(input.pullsPerVersion));
+  const arsenalPerVersion = Math.max(0, Math.floor(input.arsenalPerVersion));
+  const versionCount = Math.max(1, Math.floor(input.versionCount));
+  const bannersPerVersion = Math.max(1, Math.floor(input.bannersPerVersion));
 
-  // 占位：成功概率随预算增加略增（仅用于脚手架演示）
-  const baseP = 0.10;
-  const budgetFactor = Math.min(0.75, pullsBudget / 3000);
-  const successP = Math.min(0.95, baseP + budgetFactor);
+  // 创建策略配置
+  const strategyConfig =
+    input.strategyConfig || createDefaultStrategyConfig(input.strategyId);
 
-  let successCount = 0;
-  const spentSamples: number[] = [];
+  // 存储所有trial的结果
+  const results: StrategyExecutionResult[] = [];
 
+  // 执行多次模拟
   for (let i = 0; i < totalTrials; i++) {
-    // 占位：用几何分布抽样“达成所需抽数”，并截断在预算内
-    let spent = 0;
-    while (spent < pullsBudget) {
-      spent++;
-      if (rng.nextFloat() < successP / Math.max(1, pullsBudget)) {
-        break;
-      }
-    }
+    const result = executeStrategy(
+      strategyConfig,
+      currentPulls,
+      arsenalPerVersion,
+      pullsPerVersion,
+      versionCount,
+      bannersPerVersion,
+      rng
+    );
 
-    const success = spent < pullsBudget;
-    if (success) successCount++;
+    results.push(result);
 
-    // 若失败，记为预算（表示抽完也没达成）
-    spentSamples.push(success ? spent : pullsBudget);
-
+    // 定期报告进度
     if (onProgress && (i + 1) % 500 === 0) {
       onProgress(i + 1, totalTrials);
     }
   }
 
-  spentSamples.sort((a, b) => a - b);
+  // 最后一次报告进度
+  if (onProgress) {
+    onProgress(totalTrials, totalTrials);
+  }
 
-  const avgSpent = spentSamples.reduce((sum, v) => sum + v, 0) / spentSamples.length;
-  const q = (p: number) => spentSamples[Math.min(spentSamples.length - 1, Math.floor(p * (spentSamples.length - 1)))];
+  // 统计分析
+  const characterCounts = results.map((r) => r.obtainedCharacterCount);
+  const weaponCounts = results.map((r) => r.obtainedWeaponCount);
+  const pullsSpent = results.map((r) => r.totalPullsSpent);
+
+  // 计算总卡池数
+  const totalBanners = versionCount * bannersPerVersion;
+
+  // 计算角色覆盖率（获得所有角色的概率）
+  const characterFullCoverageRate =
+    results.filter((r) => r.obtainedAllCharacters).length / totalTrials;
+
+  // 计算专武覆盖率（获得所有专武的概率）
+  const weaponFullCoverageRate =
+    results.filter((r) => r.obtainedAllWeapons).length / totalTrials;
+
+  // 计算角色获取期望（平均获得角色数）
+  const avgCharacterCount =
+    characterCounts.reduce((sum, v) => sum + v, 0) / totalTrials;
+
+  // 计算专武获取期望（平均获得专武数）
+  const avgWeaponCount =
+    weaponCounts.reduce((sum, v) => sum + v, 0) / totalTrials;
+
+  // 计算平均消耗抽数
+  const avgSpent = pullsSpent.reduce((sum, v) => sum + v, 0) / totalTrials;
+
+  // 计算分位数（以消耗抽数为基准）
+  const sortedPulls = [...pullsSpent].sort((a, b) => a - b);
+  const getQuantile = (p: number) =>
+    sortedPulls[Math.min(sortedPulls.length - 1, Math.floor(p * (sortedPulls.length - 1)))];
+
+  const p50Spent = getQuantile(0.5);
+  const p90Spent = getQuantile(0.9);
+  const p99Spent = getQuantile(0.99);
+
+  // 对于成功率，我们定义为"获得至少1个角色"的概率
+  const successRate = results.filter((r) => r.obtainedCharacterCount > 0).length / totalTrials;
 
   return {
-    successRate: successCount / totalTrials,
+    successRate,
     avgSpent,
-    p50Spent: q(0.5),
-    p90Spent: q(0.9),
-    p99Spent: q(0.99),
+    p50Spent,
+    p90Spent,
+    p99Spent,
     debug: {
-      note: '当前为占位模拟模型；请在补充卡池机制/策略后替换为真实模拟逻辑。',
+      note: `真实模拟结果 | 策略: ${strategyConfig.baseStrategy} | 角色期望: ${avgCharacterCount.toFixed(2)}/${totalBanners} | 专武期望: ${avgWeaponCount.toFixed(2)}/${totalBanners} | 角色覆盖率: ${(characterFullCoverageRate * 100).toFixed(1)}% | 专武覆盖率: ${(weaponFullCoverageRate * 100).toFixed(1)}%`,
       inputEcho: input,
     },
   };

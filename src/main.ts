@@ -51,9 +51,8 @@ function render() {
           <div class="field">
             <label>策略（strategyId）</label>
             <select id="strategyId">
-              <option value="S1" ${input.strategyId === 'S1' ? 'selected' : ''}>S1：按顺序每池最多 X 抽（占位）</option>
-              <option value="S2" ${input.strategyId === 'S2' ? 'selected' : ''}>S2：只抽目标池（占位）</option>
-              <option value="S3" ${input.strategyId === 'S3' ? 'selected' : ''}>S3：保底止损（占位）</option>
+              <option value="S1" ${input.strategyId === 'S1' ? 'selected' : ''}>S1：保底派（>80抽进入）</option>
+              <option value="S2" ${input.strategyId === 'S2' ? 'selected' : ''}>S2：井派（>120抽进入）</option>
             </select>
           </div>
           <div class="field">
@@ -136,6 +135,7 @@ function bind() {
     input = {
       currentPulls: getNumber('currentPulls', 0),
       pullsPerVersion: getNumber('pullsPerVersion', 0),
+      arsenalPerVersion: 1000, // 先用固定值,后续可以添加到表单
       versionCount: getNumber('versionCount', 1),
       bannersPerVersion: getNumber('bannersPerVersion', 1),
       strategyId: getSelect('strategyId') as SimInput['strategyId'],
