@@ -333,6 +333,7 @@ describe('策略集成测试', () => {
         config,
         200,
         1000,
+        1000,
         60,
         3,
         2,
@@ -342,6 +343,7 @@ describe('策略集成测试', () => {
       const result2 = executeStrategy(
         config,
         200,
+        1000,
         1000,
         60,
         3,
@@ -420,6 +422,7 @@ describe('策略集成测试', () => {
 
       const result = executeStrategy(
         config,
+        100,
         1000,
         5000,
         200,
