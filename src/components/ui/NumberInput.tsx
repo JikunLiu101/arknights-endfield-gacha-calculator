@@ -9,7 +9,7 @@ interface NumberInputProps {
   max?: number;
   step?: number;
   placeholder?: string;
-  tooltip?: string;
+  description?: string;
   error?: string;
   disabled?: boolean;
 }
@@ -22,7 +22,7 @@ export function NumberInput({
   max,
   step = 1,
   placeholder,
-  tooltip,
+  description,
   error,
   disabled = false,
 }: NumberInputProps) {
@@ -66,15 +66,13 @@ export function NumberInput({
     <div className="w-full">
       <label
         htmlFor={label}
-        className="block text-sm font-medium text-gray-700 mb-2"
+        className="block text-sm font-medium text-gray-700 mb-1"
       >
         {label}
-        {tooltip && (
-          <span className="ml-2 text-gray-400 cursor-help" title={tooltip}>
-            ⓘ
-          </span>
-        )}
       </label>
+      {description && (
+        <p className="text-xs text-gray-500 mb-2">{description}</p>
+      )}
       <input
         id={label}
         type="number"

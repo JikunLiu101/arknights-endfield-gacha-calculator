@@ -56,6 +56,11 @@ export const ADDON_STRATEGIES = {
     name: '凑情报书',
     defaultEnabled: false,
   },
+  A4: {
+    id: 'A4' as const,
+    name: '最后版本用光所有资源',
+    defaultEnabled: false,
+  },
 };
 
 // ============ 策略配置工具函数 ============
@@ -74,6 +79,7 @@ export function createDefaultStrategyConfig(baseStrategyId: BaseStrategyId): Str
       A1_alwaysUseIntelReport: ADDON_STRATEGIES.A1.defaultEnabled,
       A2_pullForFastTrack: ADDON_STRATEGIES.A2.defaultEnabled,
       A3_pullForIntelReport: ADDON_STRATEGIES.A3.defaultEnabled,
+      A4_useAllInLastVersion: ADDON_STRATEGIES.A4.defaultEnabled,
     },
   };
 }
@@ -238,6 +244,8 @@ import {
  * @param pullsNextVersion 下个版本抽数（用于附加策略判断）
  * @param globalState 全局状态
  * @param hasIntelReport 是否有寻访情报书
+ * @param isLastVersion 是否为最后一个版本
+ * @param isLastBanner 是否为当前版本的最后一个卡池
  * @param rng 随机数生成器
  * @returns 卡池模拟结果
  */
@@ -247,6 +255,8 @@ export function pullCharacterBanner(
   pullsNextVersion: number,
   globalState: GlobalGachaState,
   hasIntelReport: boolean,
+  isLastVersion: boolean,
+  isLastBanner: boolean,
   rng: Rng
 ): BannerOutcome & { newGlobalState: GlobalGachaState; generatedIntelReport: boolean } {
   const threshold = config.characterBannerThreshold;
@@ -264,8 +274,18 @@ export function pullCharacterBanner(
   let shouldEnter = false;
   let pullsToSpend = 0; // 计划消耗的库存抽数
 
+  // 0. 检查附加策略四（最后版本用光资源）- 最高优先级
+  if (
+    config.addonStrategies.A4_useAllInLastVersion &&
+    isLastVersion &&
+    isLastBanner &&
+    currentPulls > 0
+  ) {
+    shouldEnter = true;
+    pullsToSpend = currentPulls; // 用光所有抽数
+  }
   // 1. 检查基础策略进入条件
-  if (canEnterCharacterBanner(currentPulls, threshold)) {
+  else if (canEnterCharacterBanner(currentPulls, threshold)) {
     shouldEnter = true;
     pullsToSpend = currentPulls; // 基础策略：持续抽到UP或抽数耗尽
   }
@@ -602,6 +622,10 @@ export function executeStrategy(
       const remainingVersions = versionCount - version - 1;
       const pullsNextVersion = remainingVersions > 0 ? pullsPerVersion : 0;
 
+      // 判断是否为最后一个版本和最后一个卡池
+      const isLastVersion = version === versionCount - 1;
+      const isLastBanner = banner === bannersPerVersion - 1;
+
       // 执行角色池模拟
       const bannerOutcome = pullCharacterBanner(
         config,
@@ -609,6 +633,8 @@ export function executeStrategy(
         pullsNextVersion,
         globalState,
         hasIntelReport,
+        isLastVersion,
+        isLastBanner,
         rng
       );
 

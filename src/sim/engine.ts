@@ -63,6 +63,7 @@ export function runSimulation(
   const characterCounts = results.map((r) => r.obtainedCharacterCount);
   const weaponCounts = results.map((r) => r.obtainedWeaponCount);
   const pullsSpent = results.map((r) => r.totalPullsSpent);
+  const arsenalSpent = results.map((r) => r.totalArsenalSpent);
 
   // 计算总卡池数
   const totalBanners = versionCount * bannersPerVersion;
@@ -86,6 +87,14 @@ export function runSimulation(
   // 计算平均消耗抽数
   const avgSpent = pullsSpent.reduce((sum, v) => sum + v, 0) / totalTrials;
 
+  // 计算平均消耗武库配额和申领次数
+  const avgArsenalSpent = arsenalSpent.reduce((sum, v) => sum + v, 0) / totalTrials;
+  const avgArsenalClaims = avgArsenalSpent / 1980;
+
+  // 计算总资源（初始 + 规划期间获取）
+  const totalPulls = currentPulls + pullsPerVersion * versionCount;
+  const totalArsenal = arsenalPerVersion * versionCount;
+
   // 计算分位数（以消耗抽数为基准）
   const sortedPulls = [...pullsSpent].sort((a, b) => a - b);
   const getQuantile = (p: number) =>
@@ -95,15 +104,94 @@ export function runSimulation(
   const p90Spent = getQuantile(0.9);
   const p99Spent = getQuantile(0.99);
 
+  // 计算角色获取中位数
+  const sortedCharacterCounts = [...characterCounts].sort((a, b) => a - b);
+  const medianCharactersObtained = sortedCharacterCounts[
+    Math.floor(sortedCharacterCounts.length / 2)
+  ];
+
+  // 计算专武获取中位数
+  const sortedWeaponCounts = [...weaponCounts].sort((a, b) => a - b);
+  const medianWeaponsObtained = sortedWeaponCounts[
+    Math.floor(sortedWeaponCounts.length / 2)
+  ];
+
+  // 计算角色获取分布
+  const characterCountMap = new Map<number, number>();
+  characterCounts.forEach((count) => {
+    characterCountMap.set(count, (characterCountMap.get(count) || 0) + 1);
+  });
+  const characterDistribution = Array.from(characterCountMap.entries())
+    .map(([count, freq]) => ({
+      count,
+      percentage: (freq / totalTrials) * 100,
+    }))
+    .sort((a, b) => a.count - b.count);
+
+  // 计算专武获取分布
+  const weaponCountMap = new Map<number, number>();
+  weaponCounts.forEach((count) => {
+    weaponCountMap.set(count, (weaponCountMap.get(count) || 0) + 1);
+  });
+  const weaponDistribution = Array.from(weaponCountMap.entries())
+    .map(([count, freq]) => ({
+      count,
+      percentage: (freq / totalTrials) * 100,
+    }))
+    .sort((a, b) => a.count - b.count);
+
+  // 计算角色累加总结
+  let charCumulative = 0;
+  let charThresholdCount = 0;
+  for (const { count, percentage } of characterDistribution) {
+    charCumulative += percentage;
+    charThresholdCount = count;
+    if (charCumulative >= 75) break;
+  }
+  const characterCumulativeSummary = `超过${charCumulative.toFixed(1)}%的玩家可以获得${charThresholdCount}个限定角色`;
+
+  // 计算专武累加总结
+  let weaponCumulative = 0;
+  let weaponThresholdCount = 0;
+  for (const { count, percentage } of weaponDistribution) {
+    weaponCumulative += percentage;
+    weaponThresholdCount = count;
+    if (weaponCumulative >= 75) break;
+  }
+  const weaponCumulativeSummary = `超过${weaponCumulative.toFixed(1)}%的玩家可以获得${weaponThresholdCount}个专武`;
+
   // 对于成功率，我们定义为"获得至少1个角色"的概率
   const successRate = results.filter((r) => r.obtainedCharacterCount > 0).length / totalTrials;
 
   return {
+    // 资源统计
+    totalPulls,
+    totalArsenal,
+    avgPullsSpent: avgSpent,
+    avgArsenalSpent,
+    avgArsenalClaims,
+
+    // 角色统计
+    totalCharacters: totalBanners,
+    avgCharactersObtained: avgCharacterCount,
+    medianCharactersObtained,
+    characterDistribution,
+    characterCumulativeSummary,
+
+    // 专武统计
+    totalWeapons: totalBanners,
+    avgWeaponsObtained: avgWeaponCount,
+    medianWeaponsObtained,
+    weaponDistribution,
+    weaponCumulativeSummary,
+
+    // 旧字段（保持向后兼容）
     successRate,
     avgSpent,
     p50Spent,
     p90Spent,
     p99Spent,
+
     debug: {
       note: `真实模拟结果 | 策略: ${strategyConfig.baseStrategy} | 角色期望: ${avgCharacterCount.toFixed(2)}/${totalBanners} | 专武期望: ${avgWeaponCount.toFixed(2)}/${totalBanners} | 角色覆盖率: ${(characterFullCoverageRate * 100).toFixed(1)}% | 专武覆盖率: ${(weaponFullCoverageRate * 100).toFixed(1)}%`,
       inputEcho: input,

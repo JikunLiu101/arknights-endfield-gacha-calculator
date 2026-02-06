@@ -1,5 +1,4 @@
 
-
 interface RangeSliderProps {
   label: string;
   value: number;
@@ -9,6 +8,7 @@ interface RangeSliderProps {
   onChange: (value: number) => void;
   showMarks?: boolean;
   formatter?: (value: number) => string;
+  description?: string;
   warning?: string;
   disabled?: boolean;
 }
@@ -22,6 +22,7 @@ export function RangeSlider({
   onChange,
   showMarks = true,
   formatter,
+  description,
   warning,
   disabled = false,
 }: RangeSliderProps) {
@@ -35,12 +36,16 @@ export function RangeSlider({
 
   return (
     <div className="w-full">
-      <div className="flex justify-between items-baseline mb-2">
+      <div className="flex justify-between items-baseline mb-1">
         <label className="text-sm font-medium text-gray-700">{label}</label>
         <span className="text-2xl font-bold text-blue-600">
           {displayValue}
         </span>
       </div>
+
+      {description && (
+        <p className="text-xs text-gray-500 mb-2">{description}</p>
+      )}
 
       <input
         type="range"

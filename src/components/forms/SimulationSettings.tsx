@@ -3,7 +3,7 @@ import { RangeSlider } from '../ui/RangeSlider';
 import { Button } from '../ui/Button';
 
 interface SimulationSettingsProps {
-  trials: 1000 | 5000 | 20000;
+  trials: 1000 | 5000 | 10000 | 20000;
   isRunning: boolean;
   progress: number;
   onTrialsChange: (value: number) => void;
@@ -12,7 +12,7 @@ interface SimulationSettingsProps {
   disabled?: boolean;
 }
 
-const trialsOptions = [1000, 5000, 20000];
+const trialsOptions = [1000, 5000, 10000, 20000];
 
 export function SimulationSettings({
   trials,
@@ -33,6 +33,9 @@ export function SimulationSettings({
 
   const getWarning = () => {
     if (trials === 20000) {
+      return '可能需要较长时间';
+    }
+    if (trials === 10000) {
       return '可能需要较长时间';
     }
     return undefined;

@@ -15,6 +15,7 @@ export function useSimulatorState() {
       A1: true,
       A2: false,
       A3: false,
+      A4: false,
     },
     trials: 5000,
     isRunning: false,
@@ -42,7 +43,7 @@ export function useSimulatorState() {
   }, []);
 
   // 切换附加策略
-  const toggleAddonStrategy = useCallback((id: 'A1' | 'A2' | 'A3') => {
+  const toggleAddonStrategy = useCallback((id: 'A1' | 'A2' | 'A3' | 'A4') => {
     setState((prev) => ({
       ...prev,
       addonStrategies: {

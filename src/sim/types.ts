@@ -8,7 +8,7 @@ export type BaseStrategyId = 'S1' | 'S2';
 /**
  * 附加策略ID
  */
-export type AddonStrategyId = 'A1' | 'A2' | 'A3';
+export type AddonStrategyId = 'A1' | 'A2' | 'A3' | 'A4';
 
 /**
  * 策略配置
@@ -24,6 +24,7 @@ export type StrategyConfig = {
     A1_alwaysUseIntelReport: boolean;   // 永远使用情报书（默认true）
     A2_pullForFastTrack: boolean;       // 凑加急寻访（默认false）
     A3_pullForIntelReport: boolean;     // 凑情报书（默认false）
+    A4_useAllInLastVersion: boolean;    // 最后版本用光资源（默认false）
   };
 };
 
@@ -45,11 +46,34 @@ export type SimInput = {
 };
 
 export type SimOutput = {
+  // 资源统计
+  totalPulls: number; // 初始 + 获取的总抽数
+  totalArsenal: number; // 初始 + 获取的总武库配额
+  avgPullsSpent: number; // 平均花费抽数
+  avgArsenalSpent: number; // 平均花费武库配额
+  avgArsenalClaims: number; // 平均申领次数（武库配额/1980）
+
+  // 角色统计
+  totalCharacters: number; // 总限定角色数量（卡池总数）
+  avgCharactersObtained: number; // 期望获得的不重复6星限定角色数量
+  medianCharactersObtained: number; // 限定角色获取中位数
+  characterDistribution: { count: number; percentage: number }[]; // 角色获取分布
+  characterCumulativeSummary: string; // 角色累加总结（"超过X%的玩家可以获得Y个限定角色"）
+
+  // 专武统计
+  totalWeapons: number; // 总专武数量（与角色数相同）
+  avgWeaponsObtained: number; // 期望获得的专武数量
+  medianWeaponsObtained: number; // 专武获取中位数
+  weaponDistribution: { count: number; percentage: number }[]; // 专武获取分布
+  weaponCumulativeSummary: string; // 专武累加总结
+
+  // 旧字段（保持向后兼容）
   successRate: number;
   avgSpent: number;
   p50Spent: number;
   p90Spent: number;
   p99Spent: number;
+
   debug: {
     note: string;
     inputEcho: SimInput;

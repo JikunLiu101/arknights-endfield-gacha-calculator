@@ -17,10 +17,11 @@ export interface SimulatorUIState {
     A1: boolean;
     A2: boolean;
     A3: boolean;
+    A4: boolean;
   };
 
   // 模拟设置
-  trials: 1000 | 5000 | 20000;
+  trials: 1000 | 5000 | 10000 | 20000;
 
   // 运行状态
   isRunning: boolean;

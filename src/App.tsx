@@ -3,8 +3,9 @@ import { useSimulatorState } from './hooks/useSimulatorState';
 import { Header } from './components/layout/Header';
 import { InputPanel } from './components/layout/InputPanel';
 import { ResultPanel } from './components/layout/ResultPanel';
-import type { SimInput } from './sim/types';
+import type { SimInput, StrategyConfig } from './sim/types';
 import type { WorkerRunRequest, WorkerResponse } from './sim/types';
+import { createDefaultStrategyConfig } from './sim/strategies';
 
 export function App() {
   const {
@@ -25,6 +26,17 @@ export function App() {
       return;
     }
 
+    // Build StrategyConfig from UI state
+    const strategyConfig: StrategyConfig = {
+      ...createDefaultStrategyConfig(state.baseStrategy),
+      addonStrategies: {
+        A1_alwaysUseIntelReport: state.addonStrategies.A1,
+        A2_pullForFastTrack: state.addonStrategies.A2,
+        A3_pullForIntelReport: state.addonStrategies.A3,
+        A4_useAllInLastVersion: state.addonStrategies.A4,
+      },
+    };
+
     // Build SimInput from state
     const input: SimInput = {
       currentPulls: state.currentPulls,
@@ -33,6 +45,7 @@ export function App() {
       versionCount: state.versionCount,
       bannersPerVersion: state.bannersPerVersion,
       strategyId: state.baseStrategy,
+      strategyConfig: strategyConfig,
       trials: state.trials,
       seed: null, // No seed for real simulations
     };

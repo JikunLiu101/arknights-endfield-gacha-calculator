@@ -31,6 +31,11 @@ export function PlanningInputs({
   onChange,
   disabled = false,
 }: PlanningInputsProps) {
+  const handleArsenalChange = (delta: number) => {
+    const newValue = Math.max(0, arsenalPerVersion + delta);
+    onChange('arsenalPerVersion', newValue);
+  };
+
   return (
     <div className="space-y-5">
       <NumberInput
@@ -40,22 +45,46 @@ export function PlanningInputs({
         min={0}
         step={1}
         placeholder="50"
-        tooltip="每个版本预计可获得的角色池抽数"
+        description="每个版本预计可获得的角色抽数（计算版本福利、每日、活动等获得的通用角色抽数）"
         error={errors.pullsPerVersion}
         disabled={disabled}
       />
 
-      <NumberInput
-        label="每版本获得武库配额"
-        value={arsenalPerVersion}
-        onChange={(value) => onChange('arsenalPerVersion', value)}
-        min={0}
-        step={100}
-        placeholder="1000"
-        tooltip="每个版本预计可获得的武库配额点数"
-        error={errors.arsenalPerVersion}
-        disabled={disabled}
-      />
+      <div>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <NumberInput
+              label="每版本获得武库配额"
+              value={arsenalPerVersion}
+              onChange={(value) => onChange('arsenalPerVersion', value)}
+              min={0}
+              step={100}
+              placeholder="1000"
+              description="每个版本预计可获得的武库配额（计算版本福利、每日、活动等获得的武库配额）"
+              error={errors.arsenalPerVersion}
+              disabled={disabled}
+            />
+          </div>
+          <div className="flex flex-col justify-end gap-2 pb-1">
+            <button
+              type="button"
+              onClick={() => handleArsenalChange(1980)}
+              disabled={disabled}
+              className="px-3 py-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              +1申领
+            </button>
+            <button
+              type="button"
+              onClick={() => handleArsenalChange(-1980)}
+              disabled={disabled}
+              className="px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              -1申领
+            </button>
+          </div>
+        </div>
+      </div>
 
       <RangeSlider
         label="规划版本数"
@@ -65,6 +94,7 @@ export function PlanningInputs({
         step={1}
         onChange={(value) => onChange('versionCount', value)}
         formatter={(v) => `${v}个版本`}
+        description="规划未来多少个版本的资源和抽卡，最多8个版本"
         disabled={disabled}
       />
 
@@ -73,7 +103,7 @@ export function PlanningInputs({
         options={bannerOptions}
         value={bannersPerVersion}
         onChange={(value) => onChange('bannersPerVersion', Number(value))}
-        tooltip="每个版本预计出现的限定角色卡池数量"
+        description="每个版本预计出现的限定角色卡池数量"
         disabled={disabled}
       />
     </div>

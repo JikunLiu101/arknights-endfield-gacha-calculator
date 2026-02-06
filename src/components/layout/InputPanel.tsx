@@ -11,7 +11,7 @@ interface InputPanelProps {
   errors: ValidationErrors;
   onNumberChange: (key: string, value: number) => void;
   onBaseStrategyChange: (strategy: 'S1' | 'S2') => void;
-  onAddonStrategyToggle: (id: 'A1' | 'A2' | 'A3') => void;
+  onAddonStrategyToggle: (id: 'A1' | 'A2' | 'A3' | 'A4') => void;
   onStartSimulation: () => void;
   onCancel: () => void;
 }

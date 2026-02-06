@@ -13,7 +13,7 @@ interface SelectProps {
   options: SelectOption[];
   value: string | number;
   onChange: (value: string | number) => void;
-  tooltip?: string;
+  description?: string;
   disabled?: boolean;
 }
 
@@ -22,7 +22,7 @@ export function Select({
   options,
   value,
   onChange,
-  tooltip,
+  description,
   disabled = false,
 }: SelectProps) {
   const selectedOption = options.find((opt) => opt.value === value);
@@ -32,14 +32,12 @@ export function Select({
       <Listbox value={value} onChange={onChange} disabled={disabled}>
         {({ open }) => (
           <>
-            <Listbox.Label className="block text-sm font-medium text-gray-700 mb-2">
+            <Listbox.Label className="block text-sm font-medium text-gray-700 mb-1">
               {label}
-              {tooltip && (
-                <span className="ml-2 text-gray-400" title={tooltip}>
-                  ⓘ
-                </span>
-              )}
             </Listbox.Label>
+            {description && (
+              <p className="text-xs text-gray-500 mb-2">{description}</p>
+            )}
             <div className="relative">
               <Listbox.Button
                 className={clsx(
