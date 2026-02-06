@@ -17,6 +17,9 @@ export const WEAPON_CLAIM_COST = 1980;
 /** 武器池井机制申领次数 */
 export const WEAPON_SPARK_CLAIMS = 8;
 
+/** 武器池保底申领次数 */
+export const WEAPON_PITY_CLAIMS = 4;
+
 // ============ 基础策略配置 ============
 
 /**
@@ -25,13 +28,13 @@ export const WEAPON_SPARK_CLAIMS = 8;
 export const BASE_STRATEGIES = {
   S1: {
     id: 'S1' as const,
-    name: '保底派',
+    name: '80抽小保底策略',
     characterBannerThreshold: 80,
     weaponBannerThreshold: WEAPON_SPARK_CLAIMS * WEAPON_CLAIM_COST, // 15840
   },
   S2: {
     id: 'S2' as const,
-    name: '井派',
+    name: '120抽井策略',
     characterBannerThreshold: 120,
     weaponBannerThreshold: WEAPON_SPARK_CLAIMS * WEAPON_CLAIM_COST, // 15840
   },
@@ -61,6 +64,11 @@ export const ADDON_STRATEGIES = {
     name: '最后版本用光所有资源',
     defaultEnabled: false,
   },
+  A5: {
+    id: 'A5' as const,
+    name: '武器井优先',
+    defaultEnabled: true,
+  },
 };
 
 // ============ 策略配置工具函数 ============
@@ -80,6 +88,7 @@ export function createDefaultStrategyConfig(baseStrategyId: BaseStrategyId): Str
       A2_pullForFastTrack: ADDON_STRATEGIES.A2.defaultEnabled,
       A3_pullForIntelReport: ADDON_STRATEGIES.A3.defaultEnabled,
       A4_useAllInLastVersion: ADDON_STRATEGIES.A4.defaultEnabled,
+      A5_weaponSparkPriority: ADDON_STRATEGIES.A5.defaultEnabled,
     },
   };
 }
@@ -497,7 +506,13 @@ export function claimWeaponBanner(
   hasCorrespondingCharacter: boolean,
   rng: Rng
 ): WeaponBannerOutcome {
-  const threshold = config.weaponBannerThreshold;
+  // 根据A5策略决定武器池进入门槛
+  // A5开启：需要8次申领机会（井优先）
+  // A5关闭：需要4次申领机会（保底优先）
+  const threshold = config.addonStrategies.A5_weaponSparkPriority
+    ? WEAPON_SPARK_CLAIMS * WEAPON_CLAIM_COST  // 15840 (8次申领)
+    : WEAPON_PITY_CLAIMS * WEAPON_CLAIM_COST;  // 7920 (4次申领)
+
   let currentArsenalPoints = arsenalPoints;
   let weaponBannerState = createInitialWeaponBannerState();
   const claimResults = [];
@@ -516,7 +531,10 @@ export function claimWeaponBanner(
   }
 
   // 持续申领，直到获得UP或达到上限
-  const maxClaims = WEAPON_SPARK_CLAIMS; // 8次
+  // 最大申领次数也根据A5策略决定
+  const maxClaims = config.addonStrategies.A5_weaponSparkPriority
+    ? WEAPON_SPARK_CLAIMS  // 8次（井优先）
+    : WEAPON_PITY_CLAIMS;  // 4次（保底优先）
   let claimsSpent = 0;
 
   while (

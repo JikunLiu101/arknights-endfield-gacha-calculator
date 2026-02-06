@@ -21,7 +21,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
   if (isRunning) {
     return (
       <div className="space-y-6">
-        <Card title="模拟进行中">
+        <Card title="模拟进行中" colorScheme="cyan">
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
             <p className="text-lg font-semibold text-gray-900 mb-2">
@@ -37,7 +37,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
   if (!result) {
     return (
       <div className="space-y-6">
-        <Card title="模拟结果">
+        <Card title="模拟结果" colorScheme="indigo">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📊</div>
             <p className="text-lg font-semibold text-gray-900 mb-2">
@@ -55,11 +55,11 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
   return (
     <div className="space-y-6">
       {/* 资源统计卡片 */}
-      <Card title="资源统计">
+      <Card title="资源统计" colorScheme="blue">
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
-              抽数总计
+              角色抽数获取总计
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {result.totalPulls.toLocaleString()}
@@ -68,16 +68,16 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
 
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
-              武库配额总计
+              平均获取武库配额
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              {result.totalArsenal.toLocaleString()}
+              {result.avgArsenalGained.toLocaleString()}
             </div>
           </div>
 
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
-              平均花费抽数
+              平均花费角色抽数
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {result.avgPullsSpent.toFixed(0)}
@@ -86,7 +86,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
 
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
-              平均花费配额
+              平均花费武库配额
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {result.avgArsenalSpent.toFixed(0)}
@@ -99,7 +99,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
       </Card>
 
       {/* 角色与专武统计 */}
-      <Card title="角色与专武统计">
+      <Card title="角色与专武统计" colorScheme="purple">
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4">
@@ -142,7 +142,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
       </Card>
 
       {/* 角色获取分布 */}
-      <Card title="限定角色获取分布">
+      <Card title="限定角色获取分布" colorScheme="amber">
         <div className="space-y-4">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart
@@ -181,7 +181,7 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
       </Card>
 
       {/* 专武获取分布 */}
-      <Card title="专武获取分布">
+      <Card title="专武获取分布" colorScheme="rose">
         <div className="space-y-4">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart

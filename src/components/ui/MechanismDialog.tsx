@@ -152,10 +152,39 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
                       <li className="ml-4">- 6星角色: +2000点</li>
                       <li className="ml-4">- 5星角色: +200点</li>
                       <li className="ml-4">- 4星角色: +20点</li>
-                      <li>• 武库配额用于申领专武：</li>
-                      <li className="ml-4">- 每次申领消耗：1980点</li>
-                      <li className="ml-4">- 最多可申领8次（满井获得UP专武）</li>
+                      <li>• 武库配额用于申领武器池专武</li>
                     </ul>
+                  </section>
+
+                  {/* 武器池机制 */}
+                  <section className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                      武器池申领机制
+                    </h4>
+                    <div className="ml-4 space-y-2">
+                      <p className="text-purple-900">
+                        <strong>申领成本</strong>：每次申领消耗1980武库配额
+                      </p>
+                      <div className="mt-2">
+                        <p className="text-purple-900 font-semibold">保底机制（4次申领）：</p>
+                        <ul className="space-y-1 mt-1">
+                          <li>• 前3次未获得6星武器时，<strong>第4次必得6星武器</strong></li>
+                          <li>• 该6星武器有50%概率为UP专武，50%为其他6星武器</li>
+                        </ul>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-purple-900 font-semibold">井机制（8次申领）：</p>
+                        <ul className="space-y-1 mt-1">
+                          <li>• 前7次未获得UP专武时，<strong>第8次必得UP专武</strong></li>
+                          <li>• 完全保证获得目标专武</li>
+                        </ul>
+                      </div>
+                      <p className="text-purple-900 mt-2">
+                        <InformationCircleIcon className="h-4 w-4 inline mr-1" />
+                        井/保底计数器<strong>每个武器池独立</strong>，更换池后重置
+                      </p>
+                    </div>
                   </section>
                 </div>
 

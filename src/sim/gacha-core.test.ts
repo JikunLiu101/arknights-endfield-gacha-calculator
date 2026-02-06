@@ -111,7 +111,7 @@ describe('核心抽卡引擎测试', () => {
       globalState.pityCounter = 80;
 
       // 第80抽应该100%给6星
-      const { result, newGlobalState } = simulateSinglePull(globalState, bannerState, rng);
+      const { result } = simulateSinglePull(globalState, bannerState, rng);
 
       expect(result.rarity).toBe(6);
       expect(result.triggeredPity).toBe(true);
@@ -145,7 +145,7 @@ describe('核心抽卡引擎测试', () => {
       bannerState.gotRateUpInThisBanner = false;
 
       // 第120抽应该强制给UP
-      const { result, newBannerState } = simulateSinglePull(globalState, bannerState, rng);
+      const { result } = simulateSinglePull(globalState, bannerState, rng);
 
       expect(result.triggeredSpark).toBe(true);
       expect(result.rarity).toBe(6);

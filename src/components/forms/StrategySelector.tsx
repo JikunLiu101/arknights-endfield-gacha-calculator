@@ -11,25 +11,26 @@ interface StrategySelectorProps {
     A2: boolean;
     A3: boolean;
     A4: boolean;
+    A5: boolean;
   };
   onBaseStrategyChange: (strategy: 'S1' | 'S2') => void;
-  onAddonStrategyToggle: (id: 'A1' | 'A2' | 'A3' | 'A4') => void;
+  onAddonStrategyToggle: (id: 'A1' | 'A2' | 'A3' | 'A4' | 'A5') => void;
   disabled?: boolean;
 }
 
 const baseStrategyOptions: RadioOption[] = [
   {
     id: 'S1',
-    name: 'S1: 保底派',
-    description: '门槛：>80抽进入角色池。稳健策略，触发硬保底后再抽。',
+    name: '80抽小保底策略',
+    description: '下角色池的门槛为80抽，若抽到up就收手去抽武器，抽到专武就停手',
     metadata: {
       门槛: '80抽',
     },
   },
   {
     id: 'S2',
-    name: 'S2: 井派',
-    description: '门槛：>120抽进入角色池。保守策略，确保能触发井机制。',
+    name: '120抽井策略',
+    description: '下角色池的门槛为120抽，若抽到up就收手去抽武器，抽到专武就停手',
     metadata: {
       门槛: '120抽',
     },
@@ -61,6 +62,12 @@ const addonStrategyOptions: CheckboxOption[] = [
     name: 'A4: 最后版本用光所有资源',
     description: '在规划的最后一个版本的最后一个卡池，无视基础策略门槛，强制进入并用光所有剩余库存抽数，不留盈余。优先级最高。',
     defaultEnabled: false,
+  },
+  {
+    id: 'A5',
+    name: 'A5: 武器井优先',
+    description: '开启时仅当武库配额≥15840（8次申领，可触发井）时才申领武器池。关闭时降低门槛至≥7920（4次申领，可触发保底），更激进地申领武器，但可能影响后续角色池资源储备。',
+    defaultEnabled: true,
   },
 ];
 
@@ -104,7 +111,7 @@ export function StrategySelector({
         <CheckboxCard
           options={addonStrategyOptions}
           value={addonStrategies}
-          onChange={(id, _checked) => onAddonStrategyToggle(id as 'A1' | 'A2' | 'A3' | 'A4')}
+          onChange={(id, _checked) => onAddonStrategyToggle(id as 'A1' | 'A2' | 'A3' | 'A4' | 'A5')}
           disabled={disabled}
         />
       </div>

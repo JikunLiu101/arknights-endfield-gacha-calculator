@@ -100,7 +100,7 @@ export function runSimulation(
   // 计算总资源（初始 + 规划期间获取）
   const totalPulls = currentPulls + pullsPerVersion * versionCount;
   // 武库配额总计应该是：平均花费 + 平均剩余
-  const totalArsenal = avgArsenalSpent + avgArsenalRemaining;
+  const avgArsenalGained = avgArsenalSpent + avgArsenalRemaining;
 
   // 计算分位数（以消耗抽数为基准）
   const sortedPulls = [...pullsSpent].sort((a, b) => a - b);
@@ -173,7 +173,7 @@ export function runSimulation(
   return {
     // 资源统计
     totalPulls,
-    totalArsenal,
+    avgArsenalGained: avgArsenalGained,
     avgPullsSpent: avgSpent,
     avgArsenalSpent,
     avgArsenalClaims,

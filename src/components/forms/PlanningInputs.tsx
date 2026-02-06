@@ -54,7 +54,7 @@ export function PlanningInputs({
         <div className="flex gap-2">
           <div className="flex-1">
             <NumberInput
-              label={`每版本获得武库配额 （目前约${(arsenalPerVersion / 1980).toFixed(2)}次申领）`}
+              label={`每版本获得武库配额 （目前约 ${(arsenalPerVersion / 1980).toFixed(2)} 次申领）`}
               value={arsenalPerVersion}
               onChange={(value) => onChange('arsenalPerVersion', value)}
               min={0}

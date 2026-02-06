@@ -8,8 +8,8 @@ import type { SimInput } from './src/sim/types';
 
 console.log('====== 明日方舟：终末地 抽卡模拟器集成测试 ======\n');
 
-// 测试场景1：保底派策略（S1）
-console.log('测试场景1：保底派策略（S1）');
+// 测试场景1：80抽小保底策略策略（S1）
+console.log('测试场景1：80抽小保底策略策略（S1）');
 console.log('---------------------------------------');
 
 const input1: SimInput = {
@@ -18,7 +18,7 @@ const input1: SimInput = {
   arsenalPerVersion: 1000, // 每版本1000武库配额
   versionCount: 3, // 3个版本
   bannersPerVersion: 2, // 每版本2个卡池
-  strategyId: 'S1', // 保底派
+  strategyId: 'S1', // 80抽小保底策略
   trials: 1000, // 运行1000次模拟
   seed: 'test-seed-1', // 固定种子保证可复现
 };
@@ -36,17 +36,17 @@ console.log(`- P99消耗: ${result1.p99Spent}`);
 console.log(`- 备注: ${result1.debug.note}`);
 console.log('');
 
-// 测试场景2：井派策略（S2）
-console.log('\n测试场景2：井派策略（S2）');
+// 测试场景2：120抽井策略策略（S2）
+console.log('\n测试场景2：120抽井策略策略（S2）');
 console.log('---------------------------------------');
 
 const input2: SimInput = {
-  currentPulls: 300, // 初始300抽（井派需要更多）
+  currentPulls: 300, // 初始300抽（120抽井策略需要更多）
   pullsPerVersion: 80, // 每版本80抽
   arsenalPerVersion: 1500, // 每版本1500武库配额
   versionCount: 3, // 3个版本
   bannersPerVersion: 2, // 每版本2个卡池
-  strategyId: 'S2', // 井派
+  strategyId: 'S2', // 120抽井策略
   trials: 1000, // 运行1000次模拟
   seed: 'test-seed-2', // 固定种子保证可复现
 };
@@ -74,7 +74,7 @@ const input3: SimInput = {
   arsenalPerVersion: 500, // 每版本500武库配额
   versionCount: 2, // 2个版本
   bannersPerVersion: 2, // 每版本2个卡池
-  strategyId: 'S1', // 保底派
+  strategyId: 'S1', // 80抽小保底策略
   trials: 1000, // 运行1000次模拟
   seed: 'test-seed-3', // 固定种子保证可复现
 };
@@ -93,8 +93,8 @@ console.log(`- 备注: ${result3.debug.note}`);
 
 console.log('\n====== 所有测试完成 ======');
 console.log('\n验证结果:');
-console.log('✓ 保底派策略正常运行');
-console.log('✓ 井派策略正常运行');
+console.log('✓ 80抽小保底策略策略正常运行');
+console.log('✓ 120抽井策略策略正常运行');
 console.log('✓ 资源不足场景正常运行');
 console.log('✓ 随机种子复现功能正常');
 console.log('\n集成测试通过！系统已准备就绪。');

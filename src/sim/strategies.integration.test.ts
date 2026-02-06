@@ -56,9 +56,7 @@ describe('策略集成测试', () => {
     });
 
     it('应该在获得UP角色后立即停止（基础策略）', () => {
-      const rng = createRng('test-seed-4');
       const config = createDefaultStrategyConfig('S1');
-      const globalState = createInitialGlobalState();
 
       // 执行多次直到遇到获得UP的情况
       let gotRateUp = false;
@@ -159,7 +157,6 @@ describe('策略集成测试', () => {
     });
 
     it('应该在获得UP专武后立即停止', () => {
-      const rng = createRng('test-seed-weapon-4');
       const config = createDefaultStrategyConfig('S1');
 
       // 执行多次直到遇到获得UP的情况
@@ -188,6 +185,99 @@ describe('策略集成测试', () => {
 
       // 即使配额充足，最多也只能申领8次
       expect(result.claimsSpent).toBeLessThanOrEqual(8);
+    });
+  });
+
+  describe('武器池 A5 策略测试', () => {
+    it('A5开启（默认）：15840配额可以申领，最多8次', () => {
+      const rng = createRng('test-seed-a5-1');
+      const config = createDefaultStrategyConfig('S1');
+      // A5 默认开启，threshold = 15840
+
+      const result = claimWeaponBanner(
+        config,
+        20000, // 足够申领多次
+        true,
+        rng
+      );
+
+      // 应该申领了
+      expect(result.claimsSpent).toBeGreaterThan(0);
+      // 最多申领8次（井机制）
+      expect(result.claimsSpent).toBeLessThanOrEqual(8);
+    });
+
+    it('A5开启：10000配额（< 15840）不能申领', () => {
+      const rng = createRng('test-seed-a5-2');
+      const config = createDefaultStrategyConfig('S1');
+      // A5 默认开启，threshold = 15840
+
+      const result = claimWeaponBanner(
+        config,
+        10000, // < 15840
+        true,
+        rng
+      );
+
+      // 不应该申领
+      expect(result.claimsSpent).toBe(0);
+      expect(result.arsenalSpent).toBe(0);
+    });
+
+    it('A5关闭：7920配额可以申领，最多4次', () => {
+      const rng = createRng('test-seed-a5-3');
+      const config = createDefaultStrategyConfig('S1');
+      // 关闭 A5，threshold = 7920
+      config.addonStrategies.A5_weaponSparkPriority = false;
+
+      const result = claimWeaponBanner(
+        config,
+        10000, // >= 7920，足够申领4次以上
+        true,
+        rng
+      );
+
+      // 应该申领了
+      expect(result.claimsSpent).toBeGreaterThan(0);
+      // 最多申领4次（保底机制）
+      expect(result.claimsSpent).toBeLessThanOrEqual(4);
+    });
+
+    it('A5关闭：5000配额（< 7920）不能申领', () => {
+      const rng = createRng('test-seed-a5-4');
+      const config = createDefaultStrategyConfig('S1');
+      // 关闭 A5，threshold = 7920
+      config.addonStrategies.A5_weaponSparkPriority = false;
+
+      const result = claimWeaponBanner(
+        config,
+        5000, // < 7920
+        true,
+        rng
+      );
+
+      // 不应该申领
+      expect(result.claimsSpent).toBe(0);
+      expect(result.arsenalSpent).toBe(0);
+    });
+
+    it('A5关闭：12000配额可以申领（在7920和15840之间）', () => {
+      const rng = createRng('test-seed-a5-5');
+      const config = createDefaultStrategyConfig('S1');
+      // 关闭 A5，threshold = 7920
+      config.addonStrategies.A5_weaponSparkPriority = false;
+
+      const result = claimWeaponBanner(
+        config,
+        12000, // 7920 < 12000 < 15840
+        true,
+        rng
+      );
+
+      // 应该申领了
+      expect(result.claimsSpent).toBeGreaterThan(0);
+      // 最多申领4次
+      expect(result.claimsSpent).toBeLessThanOrEqual(4);
     });
   });
 
@@ -287,7 +377,6 @@ describe('策略集成测试', () => {
     });
 
     it('获得角色后应该尝试申领武器池', () => {
-      const rng = createRng('test-seed-full-4');
       const config = createDefaultStrategyConfig('S1');
 
       // 执行多次直到获得角色并触发武器池

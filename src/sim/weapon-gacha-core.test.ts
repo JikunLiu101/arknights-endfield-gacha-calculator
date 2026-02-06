@@ -9,7 +9,6 @@ import {
   createInitialWeaponBannerState,
 } from './weapon-gacha-core';
 import { createRng } from './rng';
-import type { WeaponBannerState } from './types';
 
 // ============ 测试用例 ============
 
@@ -183,7 +182,7 @@ describe('武器池核心引擎测试', () => {
       currentState.weaponSparkCounter = 7;
 
       // 再次尝试申领
-      const { result: secondResult } = simulateWeaponClaim(currentState, rng);
+      simulateWeaponClaim(currentState, rng);
 
       // 因为gotRateUpInThisBanner=true，井不应该再次触发强制
       expect(stateAfterFirstSpark.gotRateUpInThisBanner).toBe(true);
@@ -256,7 +255,6 @@ describe('武器池核心引擎测试', () => {
       const rate6 = count6Star / totalPulls;
       const rate5 = count5Star / totalPulls;
       const rate4 = count4Star / totalPulls;
-      const rateUpRatio = count6Star > 0 ? countRateUp / count6Star : 0;
 
       // 允许±2%的误差（因为有保底等机制影响）
       const tolerance = 0.02;

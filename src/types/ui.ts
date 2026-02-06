@@ -18,6 +18,7 @@ export interface SimulatorUIState {
     A2: boolean;
     A3: boolean;
     A4: boolean;
+    A5: boolean;
   };
 
   // 模拟设置

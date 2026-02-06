@@ -27,13 +27,17 @@ export function App() {
     }
 
     // Build StrategyConfig from UI state
+    const defaultStrategyConfig = createDefaultStrategyConfig(state.baseStrategy);
+
     const strategyConfig: StrategyConfig = {
-      ...createDefaultStrategyConfig(state.baseStrategy),
+      ...defaultStrategyConfig,
       addonStrategies: {
+        ...defaultStrategyConfig.addonStrategies,
         A1_alwaysUseIntelReport: state.addonStrategies.A1,
         A2_pullForFastTrack: state.addonStrategies.A2,
         A3_pullForIntelReport: state.addonStrategies.A3,
         A4_useAllInLastVersion: state.addonStrategies.A4,
+        A5_weaponSparkPriority: state.addonStrategies.A5,
       },
     };
 

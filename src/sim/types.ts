@@ -8,7 +8,7 @@ export type BaseStrategyId = 'S1' | 'S2';
 /**
  * 附加策略ID
  */
-export type AddonStrategyId = 'A1' | 'A2' | 'A3' | 'A4';
+export type AddonStrategyId = 'A1' | 'A2' | 'A3' | 'A4' | 'A5';
 
 /**
  * 策略配置
@@ -25,6 +25,7 @@ export type StrategyConfig = {
     A2_pullForFastTrack: boolean;       // 凑加急寻访（默认false）
     A3_pullForIntelReport: boolean;     // 凑情报书（默认false）
     A4_useAllInLastVersion: boolean;    // 最后版本用光资源（默认false）
+    A5_weaponSparkPriority: boolean;    // 武器井优先（默认true）- 开启时8次申领才抽专武，关闭时4次申领就抽
   };
 };
 
@@ -49,7 +50,7 @@ export type SimInput = {
 export type SimOutput = {
   // 资源统计
   totalPulls: number; // 初始 + 获取的总抽数
-  totalArsenal: number; // 初始 + 获取的总武库配额
+  avgArsenalGained: number; // 初始 + 获取的总武库配额，是平均值
   avgPullsSpent: number; // 平均花费抽数
   avgArsenalSpent: number; // 平均花费武库配额
   avgArsenalClaims: number; // 平均申领次数（武库配额/1980）
