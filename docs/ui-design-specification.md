@@ -1,0 +1,957 @@
+# 明日方舟：终末地 抽卡规划模拟器 UI设计规范
+
+## 设计参考
+
+参考项目：[Worth Calculator](https://github.com/zippland/worth-calculator)
+
+**核心设计原则**：
+- 现代化、简洁的界面设计
+- 渐进式表单输入体验
+- 实时反馈与验证
+- 响应式布局适配移动端
+- 清晰的数据可视化
+
+---
+
+## 1. 整体布局
+
+### 1.1 页面结构
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    顶部标题栏                         │
+│   明日方舟：终末地 抽卡规划模拟器                      │
+│   Arknights: Endfield Gacha Calculator              │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│                  输入参数面板                         │
+│   ┌─────────────────────────────────────────────┐   │
+│   │  第一部分：当前资源                          │   │
+│   │  - 当前角色抽数                              │   │
+│   │  - 当前武库配额                              │   │
+│   └─────────────────────────────────────────────┘   │
+│   ┌─────────────────────────────────────────────┐   │
+│   │  第二部分：规划配置                          │   │
+│   │  - 每版本获得角色抽数                        │   │
+│   │  - 每版本获得武库配额                        │   │
+│   │  - 规划版本数 (滑块 1-8)                    │   │
+│   │  - 每版本卡池数 (下拉 1-3)                  │   │
+│   └─────────────────────────────────────────────┘   │
+│   ┌─────────────────────────────────────────────┐   │
+│   │  第三部分：策略选择                          │   │
+│   │  [基础策略]                                 │   │
+│   │  ○ S1: 保底派 (>80抽进入)                  │   │
+│   │  ○ S2: 井派 (>120抽进入)                   │   │
+│   │  [附加策略]                                 │   │
+│   │  ☑ A1: 永远使用情报书和卡池赠送              │   │
+│   │  ☐ A2: 凑加急寻访 (赚武库配额)              │   │
+│   │  ☐ A3: 凑情报书 (为下个池准备)              │   │
+│   └─────────────────────────────────────────────┘   │
+│   ┌─────────────────────────────────────────────┐   │
+│   │  第四部分：模拟设置                          │   │
+│   │  - 模拟次数 (滑块 1000/5000/20000)         │   │
+│   │  - [开始模拟] [取消]                        │   │
+│   └─────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│                  模拟结果面板                         │
+│   ┌─────────────────────────────────────────────┐   │
+│   │  核心指标                                    │   │
+│   │  - 角色获取期望: X.XX / 总数 (XX.X%)        │   │
+│   │  - 专武获取期望: X.XX / 总数 (XX.X%)        │   │
+│   │  - 角色完全覆盖率: XX.X%                    │   │
+│   │  - 专武完全覆盖率: XX.X%                    │   │
+│   └─────────────────────────────────────────────┘   │
+│   ┌─────────────────────────────────────────────┐   │
+│   │  资源消耗统计                                │   │
+│   │  - 平均消耗抽数: XXXX                       │   │
+│   │  - 中位数 (P50): XXXX                      │   │
+│   │  - P90: XXXX  |  P99: XXXX                │   │
+│   └─────────────────────────────────────────────┘   │
+│   ┌─────────────────────────────────────────────┐   │
+│   │  分布图表                                    │   │
+│   │  [角色获取数量分布图]                        │   │
+│   │  [专武获取数量分布图]                        │   │
+│   └─────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. 组件设计规范
+
+### 2.1 数字输入框 (Number Input)
+
+**字段列表**：
+- 当前角色抽数
+- 当前武库配额
+- 每版本获得角色抽数
+- 每版本获得武库配额
+
+**设计细节**：
+```typescript
+interface NumberInputProps {
+  label: string;           // 标签文本
+  placeholder: string;     // 占位符
+  value: number;           // 当前值
+  min: number;             // 最小值 (0)
+  max?: number;            // 最大值 (可选)
+  step: number;            // 步进值
+  tooltip?: string;        // 提示信息
+  onChange: (value: number) => void;
+}
+```
+
+**UI样式**：
+```css
+- 字体: 14px, 中等粗细
+- 边框: 1px solid #e5e7eb (默认)
+       2px solid #3b82f6 (聚焦)
+       2px solid #ef4444 (错误)
+- 圆角: 8px
+- 内边距: 12px 16px
+- 高度: 48px
+- 背景: #ffffff
+- 标签位置: 输入框上方，8px间距
+```
+
+**验证规则**：
+- 只接受非负整数
+- 实时验证，非法输入时显示错误提示
+- 错误状态：红色边框 + 底部错误文本
+
+**交互行为**：
+- 点击聚焦时完整选中数字
+- 支持键盘上下键调整值（按住Shift加速10倍）
+- 失焦时自动修正为合法最近值
+
+---
+
+### 2.2 范围滑块 (Range Slider)
+
+**应用场景**：
+1. **规划版本数** (1-8个版本)
+2. **模拟次数** (三档：1000/5000/20000)
+
+**设计细节**：
+
+#### 规划版本数滑块
+```typescript
+interface VersionSliderProps {
+  label: "规划版本数";
+  min: 1;
+  max: 8;
+  value: number;
+  onChange: (value: number) => void;
+}
+```
+
+**UI样式**：
+```css
+- 滑轨高度: 6px
+- 滑轨背景: #e5e7eb (未选中), #3b82f6 (已选中)
+- 滑块尺寸: 20px × 20px
+- 滑块颜色: #3b82f6 (默认), #2563eb (hover)
+- 刻度标记: 显示1-8的数字刻度
+- 当前值显示: 滑块上方大号数字 (24px)
+```
+
+#### 模拟次数滑块
+```typescript
+interface TrialsSliderProps {
+  label: "模拟次数";
+  options: [1000, 5000, 20000];
+  value: number;
+  onChange: (value: number) => void;
+}
+```
+
+**UI样式**：
+```css
+- 采用离散三档设计
+- 刻度标记: "1K" "5K" "20K"
+- 当前值显示: "1,000次" "5,000次" "20,000次"
+- 警告提示: 20K时显示黄色图标⚠️ + "可能需要较长时间"
+```
+
+---
+
+### 2.3 下拉选择器 (Dropdown Select)
+
+**应用场景**：每版本卡池数 (1-3)
+
+**设计细节**：
+```typescript
+interface BannersPerVersionSelectProps {
+  label: "每版本卡池数";
+  options: [
+    { value: 1, label: "1个卡池/版本" },
+    { value: 2, label: "2个卡池/版本" },
+    { value: 3, label: "3个卡池/版本" }
+  ];
+  value: number;
+  onChange: (value: number) => void;
+}
+```
+
+**UI样式**：
+```css
+- 外观: 类似Number Input的样式
+- 右侧图标: 下拉箭头 (ChevronDown)
+- 下拉菜单:
+  - 阴影: 0 4px 12px rgba(0, 0, 0, 0.15)
+  - 圆角: 8px
+  - 选项高度: 40px
+  - Hover背景: #f3f4f6
+  - 选中背景: #eff6ff, 文字: #3b82f6
+```
+
+---
+
+### 2.4 策略选择器 (Strategy Toggle)
+
+#### 基础策略（单选）
+
+**设计细节**：
+```typescript
+interface BaseStrategyToggleProps {
+  options: [
+    {
+      id: 'S1',
+      name: '保底派',
+      description: '门槛：>80抽进入角色池。稳健策略，触发硬保底后再抽。',
+      threshold: 80
+    },
+    {
+      id: 'S2',
+      name: '井派',
+      description: '门槛：>120抽进入角色池。保守策略，确保能触发井机制。',
+      threshold: 120
+    }
+  ];
+  value: 'S1' | 'S2';
+  onChange: (value: 'S1' | 'S2') => void;
+}
+```
+
+**UI样式** (Radio Card Design)：
+```css
+- 卡片布局: 2列网格
+- 卡片外观:
+  - 未选中: 边框 1px #e5e7eb, 背景 #ffffff
+  - 选中: 边框 2px #3b82f6, 背景 #eff6ff
+  - Hover: 边框 1px #3b82f6
+- 卡片尺寸: 高度 auto, 内边距 20px
+- 圆角: 12px
+- 过渡: all 0.2s ease
+
+卡片内容结构:
+┌─────────────────────────────┐
+│ ○/● S1: 保底派              │
+│                             │
+│ 门槛：>80抽进入角色池        │
+│ 稳健策略，触发硬保底后再抽。 │
+│                             │
+│ 阈值：80抽                  │
+└─────────────────────────────┘
+```
+
+#### 附加策略（多选）
+
+**设计细节**：
+```typescript
+interface AddonStrategyTogglesProps {
+  options: [
+    {
+      id: 'A1',
+      name: '永远使用情报书和卡池赠送',
+      description: '自动使用卡池赠送10抽和寻访情报书，最大化免费资源利用。',
+      defaultEnabled: true
+    },
+    {
+      id: 'A2',
+      name: '凑加急寻访',
+      description: '预支未来资源凑够30抽触发加急招募，赚取武库配额。需要盈余>20/10抽。',
+      defaultEnabled: false
+    },
+    {
+      id: 'A3',
+      name: '凑情报书',
+      description: '预支未来资源凑够60抽触发情报书，为下个池准备。需要盈余>50/40抽。',
+      defaultEnabled: false
+    }
+  ];
+  value: {
+    A1: boolean;
+    A2: boolean;
+    A3: boolean;
+  };
+  onChange: (id: string, enabled: boolean) => void;
+}
+```
+
+**UI样式** (Checkbox Card Design)：
+```css
+- 卡片布局: 1列堆叠
+- 卡片外观:
+  - 未选中: 边框 1px #e5e7eb, 背景 #ffffff
+  - 选中: 边框 1px #3b82f6, 背景 #f0f9ff
+  - Hover: 阴影 0 2px 8px rgba(0, 0, 0, 0.08)
+- 卡片尺寸: 高度 auto, 内边距 16px
+- 圆角: 8px
+
+卡片内容结构:
+┌─────────────────────────────────────────┐
+│ ☑ A1: 永远使用情报书和卡池赠送          │
+│                                         │
+│ 自动使用卡池赠送10抽和寻访情报书，      │
+│ 最大化免费资源利用。                    │
+│                                         │
+│ 默认：开启 ✓                            │
+└─────────────────────────────────────────┘
+```
+
+---
+
+### 2.5 按钮组件 (Button)
+
+**设计细节**：
+
+#### 主要按钮（开始模拟）
+```css
+- 背景: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)
+- 文字: #ffffff, 16px, 粗体
+- 圆角: 8px
+- 内边距: 14px 32px
+- 高度: 48px
+- 阴影: 0 2px 8px rgba(59, 130, 246, 0.3)
+- Hover: 阴影 0 4px 12px rgba(59, 130, 246, 0.4)
+- Active: 缩放 0.98
+- Disabled: 背景 #9ca3af, 无阴影
+```
+
+#### 次要按钮（取消）
+```css
+- 背景: #ffffff
+- 边框: 1px solid #e5e7eb
+- 文字: #6b7280, 16px, 中等粗细
+- 圆角: 8px
+- 内边距: 14px 32px
+- 高度: 48px
+- Hover: 背景 #f9fafb
+```
+
+**状态管理**：
+```typescript
+interface ButtonState {
+  running: boolean;   // 模拟运行中
+  progress: number;   // 进度 0-1
+}
+
+// 运行中状态
+- 按钮文字: "模拟中... (XX%)"
+- 显示取消按钮
+- 禁用开始按钮
+```
+
+---
+
+## 3. 结果展示面板
+
+### 3.1 核心指标卡片
+
+**布局**：2×2网格
+
+```
+┌────────────────────┬────────────────────┐
+│   角色获取期望      │   专武获取期望      │
+│   4.93 / 6         │   2.17 / 6         │
+│   (82.2%)          │   (36.2%)          │
+└────────────────────┴────────────────────┘
+┌────────────────────┬────────────────────┐
+│   角色完全覆盖率    │   专武完全覆盖率    │
+│   33.3%            │   0.0%             │
+│   在1000次中       │   在1000次中       │
+└────────────────────┴────────────────────┘
+```
+
+**样式规范**：
+```css
+卡片:
+- 背景: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)
+- 边框: 1px solid #bae6fd
+- 圆角: 12px
+- 内边距: 24px
+- 阴影: 0 2px 8px rgba(0, 0, 0, 0.05)
+
+数值:
+- 字号: 36px (主数值), 24px (分母), 18px (百分比)
+- 颜色: #0c4a6e (深蓝)
+- 粗细: 700 (粗体)
+
+标签:
+- 字号: 14px
+- 颜色: #64748b
+- 粗细: 500
+```
+
+---
+
+### 3.2 资源消耗统计
+
+**布局**：横向指标栏
+
+```
+┌──────────────────────────────────────────────────┐
+│  平均消耗抽数        中位数(P50)      P90    P99  │
+│    332.03             331           380    380   │
+└──────────────────────────────────────────────────┘
+```
+
+**样式规范**：
+```css
+容器:
+- 背景: #ffffff
+- 边框: 1px solid #e5e7eb
+- 圆角: 8px
+- 内边距: 20px
+
+指标项:
+- 间距: 32px
+- 对齐: 居中
+
+标签:
+- 字号: 12px
+- 颜色: #6b7280
+- 大写: uppercase
+
+数值:
+- 字号: 24px
+- 颜色: #111827
+- 粗细: 600
+```
+
+---
+
+### 3.3 分布图表
+
+**图表类型**：柱状图 (Histogram)
+
+**两个图表**：
+1. 角色获取数量分布
+2. 专武获取数量分布
+
+**设计细节**：
+```typescript
+interface DistributionChartProps {
+  title: string;
+  data: {
+    label: string;     // "0个", "1个", "2个", ...
+    count: number;     // 频次
+    percentage: number; // 百分比
+  }[];
+  maxValue: number;    // 最大可能值 (总卡池数)
+}
+```
+
+**样式规范**：
+```css
+图表容器:
+- 背景: #ffffff
+- 边框: 1px solid #e5e7eb
+- 圆角: 12px
+- 内边距: 24px
+- 最小高度: 300px
+
+柱子:
+- 颜色: #3b82f6
+- 圆角: 4px (顶部)
+- 间距: 8px
+- Hover: 颜色 #2563eb + 提示框
+
+坐标轴:
+- X轴: 角色/专武数量 (0, 1, 2, ...)
+- Y轴: 出现频次/百分比
+- 网格线: #f3f4f6
+- 标签: 12px, #6b7280
+```
+
+**提示框 (Tooltip)**：
+```
+┌─────────────────┐
+│ 获得3个角色      │
+│ 出现: 245次      │
+│ 占比: 24.5%      │
+└─────────────────┘
+```
+
+---
+
+## 4. 响应式设计
+
+### 4.1 断点定义
+
+```css
+/* 移动端 */
+@media (max-width: 640px) {
+  - 单列布局
+  - 卡片全宽
+  - 字号缩小10%
+  - 滑块简化显示
+}
+
+/* 平板 */
+@media (min-width: 641px) and (max-width: 1024px) {
+  - 双列布局（策略卡片）
+  - 输入字段保持单列
+}
+
+/* 桌面 */
+@media (min-width: 1025px) {
+  - 三列布局（结果卡片）
+  - 左右分栏（输入/结果）
+  - 最大宽度: 1280px, 居中
+}
+```
+
+### 4.2 移动端优化
+
+**数字输入框**：
+- 触发数字键盘
+- 增大触摸区域 (minimum 44px)
+
+**滑块**：
+- 增大滑块尺寸 (28px)
+- 触摸反馈
+
+**策略卡片**：
+- 单列堆叠
+- 简化描述文字
+
+**图表**：
+- 横向滚动
+- 简化坐标轴标签
+
+---
+
+## 5. 颜色设计系统
+
+### 5.1 主色调
+
+```css
+/* 品牌色 - 蓝色系 */
+--primary-50: #eff6ff;
+--primary-100: #dbeafe;
+--primary-200: #bfdbfe;
+--primary-300: #93c5fd;
+--primary-400: #60a5fa;
+--primary-500: #3b82f6;  /* 主色 */
+--primary-600: #2563eb;
+--primary-700: #1d4ed8;
+--primary-800: #1e40af;
+--primary-900: #1e3a8a;
+```
+
+### 5.2 功能色
+
+```css
+/* 成功 */
+--success: #10b981;
+--success-light: #d1fae5;
+
+/* 警告 */
+--warning: #f59e0b;
+--warning-light: #fef3c7;
+
+/* 错误 */
+--error: #ef4444;
+--error-light: #fee2e2;
+
+/* 信息 */
+--info: #06b6d4;
+--info-light: #cffafe;
+```
+
+### 5.3 中性色
+
+```css
+/* 灰度 */
+--gray-50: #f9fafb;
+--gray-100: #f3f4f6;
+--gray-200: #e5e7eb;
+--gray-300: #d1d5db;
+--gray-400: #9ca3af;
+--gray-500: #6b7280;
+--gray-600: #4b5563;
+--gray-700: #374151;
+--gray-800: #1f2937;
+--gray-900: #111827;
+```
+
+---
+
+## 6. 字体设计系统
+
+```css
+/* 字体家族 */
+--font-sans: 'Inter', -apple-system, BlinkMacSystemFont,
+             'Segoe UI', 'Roboto', 'Helvetica Neue', Arial,
+             'Noto Sans', sans-serif;
+--font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+/* 字号 */
+--text-xs: 12px;    /* 辅助文本 */
+--text-sm: 14px;    /* 正文小 */
+--text-base: 16px;  /* 正文 */
+--text-lg: 18px;    /* 副标题 */
+--text-xl: 20px;    /* 小标题 */
+--text-2xl: 24px;   /* 标题 */
+--text-3xl: 30px;   /* 大标题 */
+--text-4xl: 36px;   /* 超大标题 */
+
+/* 字重 */
+--font-normal: 400;
+--font-medium: 500;
+--font-semibold: 600;
+--font-bold: 700;
+
+/* 行高 */
+--leading-tight: 1.25;
+--leading-normal: 1.5;
+--leading-relaxed: 1.75;
+```
+
+---
+
+## 7. 动画与过渡
+
+### 7.1 过渡时间
+
+```css
+--transition-fast: 150ms;     /* 微交互 */
+--transition-base: 200ms;     /* 标准交互 */
+--transition-slow: 300ms;     /* 复杂变化 */
+--transition-slower: 500ms;   /* 页面切换 */
+```
+
+### 7.2 缓动函数
+
+```css
+--ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+--ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+--ease-in: cubic-bezier(0.4, 0.0, 1, 1);
+```
+
+### 7.3 关键动画
+
+**按钮点击**：
+```css
+@keyframes button-press {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+```
+
+**进度条**：
+```css
+@keyframes progress-fill {
+  from { width: 0%; }
+  to { width: var(--progress-value); }
+}
+```
+
+**加载动画**：
+```css
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+```
+
+---
+
+## 8. 交互反馈
+
+### 8.1 加载状态
+
+**模拟运行中**：
+- 显示旋转的加载图标
+- 进度百分比文字
+- 禁用所有输入控件
+- 启用取消按钮
+
+```
+┌──────────────────────────────┐
+│  ⟳ 模拟中... (45%)           │
+│                              │
+│  已完成: 4,500 / 10,000次    │
+└──────────────────────────────┘
+```
+
+### 8.2 错误提示
+
+**输入验证错误**：
+```
+┌──────────────────────────────┐
+│ 当前角色抽数                  │
+│ [    -10    ]  ← 红色边框    │
+│ ⚠ 请输入0或正整数             │
+└──────────────────────────────┘
+```
+
+**运行错误**：
+```
+┌──────────────────────────────┐
+│ ❌ 模拟失败                   │
+│                              │
+│ 错误信息: ...                │
+│ [重试] [返回]                │
+└──────────────────────────────┘
+```
+
+### 8.3 成功反馈
+
+**模拟完成**：
+- 显示绿色勾选图标
+- 短暂的成功提示
+- 自动滚动到结果区域
+
+```
+┌──────────────────────────────┐
+│  ✓ 模拟完成！                 │
+│                              │
+│  已完成 10,000 次模拟         │
+│  用时: 12.3秒                │
+└──────────────────────────────┘
+```
+
+---
+
+## 9. 实现优先级
+
+### Phase 1: 核心功能 (MVP)
+✅ 数字输入框组件
+✅ 基础策略选择器
+✅ 开始/取消按钮
+✅ 基础结果展示
+
+### Phase 2: 增强交互
+⬜ 滑块组件 (版本数、模拟次数)
+⬜ 下拉选择器
+⬜ 附加策略选择器
+⬜ 输入验证与错误提示
+
+### Phase 3: 可视化
+⬜ 核心指标卡片
+⬜ 资源消耗统计
+⬜ 分布图表 (柱状图)
+
+### Phase 4: 优化体验
+⬜ 响应式布局
+⬜ 动画与过渡
+⬜ 加载状态与进度
+⬜ 移动端优化
+
+---
+
+## 10. 技术实现建议
+
+### 10.1 组件库选择
+
+**推荐方案**：
+- **Headless UI** + **Tailwind CSS**
+  - 优点：完全控制样式，无需覆盖默认样式
+  - 适合本项目的定制化需求
+
+**备选方案**：
+- **Radix UI** + **Tailwind CSS**
+  - 更强的无障碍支持
+  - 更灵活的组件API
+
+### 10.2 图表库选择
+
+**推荐**：
+- **Recharts**
+  - 基于React的声明式图表库
+  - 易于定制，性能良好
+
+**备选**：
+- **Chart.js** + **react-chartjs-2**
+  - 更轻量，文档完善
+
+### 10.3 状态管理
+
+**输入状态**：
+```typescript
+interface SimulatorState {
+  // 当前资源
+  currentPulls: number;
+  currentArsenal: number;
+
+  // 规划配置
+  pullsPerVersion: number;
+  arsenalPerVersion: number;
+  versionCount: number;
+  bannersPerVersion: number;
+
+  // 策略选择
+  baseStrategy: 'S1' | 'S2';
+  addonStrategies: {
+    A1: boolean;
+    A2: boolean;
+    A3: boolean;
+  };
+
+  // 模拟设置
+  trials: 1000 | 5000 | 20000;
+
+  // 运行状态
+  isRunning: boolean;
+  progress: number;
+
+  // 结果
+  result: SimOutput | null;
+}
+```
+
+**使用React状态管理**：
+```typescript
+const [state, setState] = useState<SimulatorState>(initialState);
+
+// 或使用 useReducer 处理复杂逻辑
+const [state, dispatch] = useReducer(simulatorReducer, initialState);
+```
+
+---
+
+## 11. 无障碍支持 (Accessibility)
+
+### 11.1 ARIA标签
+
+```html
+<!-- 数字输入 -->
+<label for="current-pulls" id="current-pulls-label">
+  当前角色抽数
+</label>
+<input
+  type="number"
+  id="current-pulls"
+  aria-labelledby="current-pulls-label"
+  aria-describedby="current-pulls-help"
+  aria-invalid="false"
+/>
+<span id="current-pulls-help" class="sr-only">
+  请输入当前拥有的角色抽数，必须为0或正整数
+</span>
+
+<!-- 滑块 -->
+<label for="version-count" id="version-count-label">
+  规划版本数
+</label>
+<input
+  type="range"
+  id="version-count"
+  min="1"
+  max="8"
+  aria-labelledby="version-count-label"
+  aria-valuenow="3"
+  aria-valuemin="1"
+  aria-valuemax="8"
+  aria-valuetext="3个版本"
+/>
+
+<!-- 策略选择 -->
+<fieldset aria-labelledby="base-strategy-legend">
+  <legend id="base-strategy-legend">基础策略</legend>
+  <input type="radio" id="strategy-s1" name="base-strategy" value="S1" />
+  <label for="strategy-s1">S1: 保底派</label>
+  <!-- ... -->
+</fieldset>
+```
+
+### 11.2 键盘导航
+
+- 所有交互元素支持Tab导航
+- 策略卡片支持方向键切换
+- 滑块支持方向键调整
+- 按钮支持Enter/Space激活
+
+### 11.3 屏幕阅读器
+
+- 提供清晰的aria-label
+- 动态内容变化时使用aria-live
+- 错误信息关联到对应输入框
+
+---
+
+## 12. 性能优化
+
+### 12.1 渲染优化
+
+```typescript
+// 使用React.memo避免不必要的重渲染
+const NumberInput = React.memo(({ value, onChange, ...props }) => {
+  // ...
+});
+
+// 使用useMemo缓存计算结果
+const chartData = useMemo(() => {
+  return processResultData(result);
+}, [result]);
+
+// 使用useCallback缓存回调函数
+const handleInputChange = useCallback((id: string, value: number) => {
+  setState(prev => ({ ...prev, [id]: value }));
+}, []);
+```
+
+### 12.2 Worker优化
+
+```typescript
+// 长时间模拟使用Web Worker
+if (trials > 5000) {
+  // 发送到Worker
+  worker.postMessage({ type: 'run', input });
+} else {
+  // 主线程运行（快速响应）
+  const result = runSimulation(input);
+}
+```
+
+### 12.3 虚拟滚动
+
+```typescript
+// 如果结果数据量大，使用虚拟滚动
+import { FixedSizeList } from 'react-window';
+
+<FixedSizeList
+  height={400}
+  itemCount={results.length}
+  itemSize={60}
+  width="100%"
+>
+  {({ index, style }) => (
+    <div style={style}>{results[index]}</div>
+  )}
+</FixedSizeList>
+```
+
+---
+
+## 后续迭代方向
+
+1. **数据持久化**：localStorage保存用户输入
+2. **结果导出**：支持导出为CSV/JSON/图片
+3. **对比模式**：同时对比多个策略的结果
+4. **高级配置**：自定义策略参数
+5. **深色模式**：支持深色主题切换
+6. **国际化**：支持多语言界面
+
+---
+
+**文档版本**: v1.0
+**最后更新**: 2026-02-06
+**维护者**: Claude + User

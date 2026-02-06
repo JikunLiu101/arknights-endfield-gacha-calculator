@@ -18,8 +18,7 @@ import type { Rng } from './rng';
 const PROB_6_STAR_BASE = 0.008;
 /** 5星基础概率 */
 const PROB_5_STAR = 0.08;
-/** 4星基础概率 */
-const PROB_4_STAR = 0.912;
+// Note: 4星基础概率 = 0.912 (not used in implementation)
 
 /** 保底触发阈值（连续65次未出6星后触发） */
 const PITY_THRESHOLD = 65;
@@ -34,13 +33,11 @@ const SPARK_THRESHOLD = 120;
 /** UP角色占6星概率的比例 */
 const RATE_UP_RATIO = 0.5;
 
-/** 加急招募触发阈值 */
-const FAST_TRACK_THRESHOLD = 30;
+// Note: 加急招募触发阈值 = 30 (handled in strategy layer)
 /** 加急招募抽数 */
 const FAST_TRACK_PULLS = 10;
 
-/** 寻访情报书触发阈值 */
-const INTEL_REPORT_THRESHOLD = 60;
+// Note: 寻访情报书触发阈值 = 60 (handled in strategy layer)
 
 /** 武库配额 */
 const ARSENAL_POINTS = {
