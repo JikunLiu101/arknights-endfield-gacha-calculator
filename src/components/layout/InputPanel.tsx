@@ -10,6 +10,7 @@ interface InputPanelProps {
   state: SimulatorUIState;
   errors: ValidationErrors;
   onNumberChange: (key: string, value: number) => void;
+  onBooleanChange: (key: string, value: boolean) => void;
   onBaseStrategyChange: (strategy: 'S1' | 'S2') => void;
   onAddonStrategyToggle: (id: 'A1' | 'A2' | 'A3' | 'A4' | 'A5') => void;
   onStartSimulation: () => void;
@@ -20,6 +21,7 @@ export function InputPanel({
   state,
   errors,
   onNumberChange,
+  onBooleanChange,
   onBaseStrategyChange,
   onAddonStrategyToggle,
   onStartSimulation,
@@ -45,8 +47,12 @@ export function InputPanel({
           arsenalPerVersion={state.arsenalPerVersion}
           versionCount={state.versionCount}
           bannersPerVersion={state.bannersPerVersion}
+          excludeFirstVersionResources={state.excludeFirstVersionResources}
           errors={errors}
           onChange={onNumberChange}
+          onToggleExcludeFirstVersionResources={(checked) =>
+            onBooleanChange('excludeFirstVersionResources', checked)
+          }
           disabled={state.isRunning}
         />
       </Card>

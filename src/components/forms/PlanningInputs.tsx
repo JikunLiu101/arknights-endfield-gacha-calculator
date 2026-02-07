@@ -2,17 +2,20 @@
 import { NumberInput } from '../ui/NumberInput';
 import { RangeSlider } from '../ui/RangeSlider';
 import { Select, SelectOption } from '../ui/Select';
+import { CheckboxCard, type CheckboxOption } from '../ui/CheckboxCard';
 
 interface PlanningInputsProps {
   pullsPerVersion: number;
   arsenalPerVersion: number;
   versionCount: number;
   bannersPerVersion: number;
+  excludeFirstVersionResources: boolean;
   errors?: {
     pullsPerVersion?: string;
     arsenalPerVersion?: string;
   };
   onChange: (key: string, value: number) => void;
+  onToggleExcludeFirstVersionResources: (checked: boolean) => void;
   disabled?: boolean;
 }
 
@@ -22,13 +25,24 @@ const bannerOptions: SelectOption[] = [
   { value: 3, label: '3个卡池/版本' },
 ];
 
+const excludeFirstVersionOption: CheckboxOption[] = [
+  {
+    id: 'excludeFirstVersionResources',
+    name: '第一个版本不计入版本资源',
+    description:
+      '第一个版本的所有资源我已经获取/花掉，因此不再计入版本资源，只计算后续版本可以获得的资源',
+  },
+];
+
 export function PlanningInputs({
   pullsPerVersion,
   arsenalPerVersion,
   versionCount,
   bannersPerVersion,
+  excludeFirstVersionResources,
   errors = {},
   onChange,
+  onToggleExcludeFirstVersionResources,
   disabled = false,
 }: PlanningInputsProps) {
   const handleArsenalChange = (delta: number) => {
@@ -95,6 +109,13 @@ export function PlanningInputs({
         onChange={(value) => onChange('versionCount', value)}
         formatter={(v) => `${v}个版本`}
         description="规划未来多少个版本的资源和抽卡，最多8个版本"
+        disabled={disabled}
+      />
+
+      <CheckboxCard
+        options={excludeFirstVersionOption}
+        value={{ excludeFirstVersionResources }}
+        onChange={(_, checked) => onToggleExcludeFirstVersionResources(checked)}
         disabled={disabled}
       />
 

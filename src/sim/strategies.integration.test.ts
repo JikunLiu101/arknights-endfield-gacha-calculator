@@ -378,6 +378,28 @@ describe('策略集成测试', () => {
       expect(result.totalPullsSpent).toBeGreaterThan(0);
     });
 
+    it('开启“第一个版本不计入版本资源”时，应跳过版本1的版本福利', () => {
+      const rng = createRng('test-exclude-v1');
+      const config = createDefaultStrategyConfig('S1');
+
+      const result = executeStrategy(
+        config,
+        0,
+        0,
+        0,
+        100, // 每版本100抽
+        2, // 2个版本
+        1, // 每版本1个卡池
+        rng,
+        true
+      );
+
+      // 版本1没有版本福利 -> 无法进入卡池 -> 不会使用卡池赠送抽数
+      expect(result.bannerBonusPullsUsedByBanner[0]).toBe(0);
+      // 版本2会发放100抽 -> 满足进入条件 -> 应使用卡池赠送抽数
+      expect(result.bannerBonusPullsUsedByBanner[1]).toBe(10);
+    });
+
     it('获得角色后应该尝试申领武器池', () => {
       const config = createDefaultStrategyConfig('S1');
 

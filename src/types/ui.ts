@@ -11,6 +11,7 @@ export interface SimulatorUIState {
   arsenalPerVersion: number;
   versionCount: number; // 1-8
   bannersPerVersion: number; // 1-3
+  excludeFirstVersionResources: boolean;
 
   // 策略选择
   baseStrategy: 'S1' | 'S2';

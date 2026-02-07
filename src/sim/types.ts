@@ -41,6 +41,11 @@ export type SimInput = {
   arsenalPerVersion: number; // 每版本武库配额
   versionCount: number;
   bannersPerVersion: number;
+  /**
+   * 若为 true，则第 1 个版本（版本1）的“每版本资源”（抽数/武库配额）不再计入。
+   * 用于表示：当前版本资源已获取/已花掉，只计算后续版本可以获得的资源。
+   */
+  excludeFirstVersionResources?: boolean;
   strategyId: BaseStrategyId;
   strategyConfig?: StrategyConfig; // 完整策略配置（可选）
   trials: number;

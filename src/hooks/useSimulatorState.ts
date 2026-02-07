@@ -10,6 +10,7 @@ export function useSimulatorState() {
     arsenalPerVersion: 1980,
     versionCount: 6,
     bannersPerVersion: 2,
+    excludeFirstVersionResources: false,
     baseStrategy: 'S1',
     addonStrategies: {
       A1: true,
@@ -41,6 +42,11 @@ export function useSimulatorState() {
       delete newErrors[key as keyof ValidationErrors];
       return newErrors;
     });
+  }, []);
+
+  // 更新布尔输入
+  const updateBoolean = useCallback((key: string, value: boolean) => {
+    setState((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   // 更新基础策略
@@ -84,6 +90,7 @@ export function useSimulatorState() {
     state,
     validationErrors,
     updateNumber,
+    updateBoolean,
     updateBaseStrategy,
     toggleAddonStrategy,
     validate,

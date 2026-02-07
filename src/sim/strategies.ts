@@ -678,7 +678,8 @@ export function executeStrategy(
   pullsPerVersion: number,
   versionCount: number,
   bannersPerVersion: number,
-  rng: Rng
+  rng: Rng,
+  excludeFirstVersionResources: boolean = false
 ): StrategyExecutionResult {
   // 初始化资源和状态
   let currentPulls = initialPulls;
@@ -699,8 +700,11 @@ export function executeStrategy(
   // 按版本循环
   for (let version = 0; version < versionCount; version++) {
     // 在版本开始时发放资源
-    currentPulls += pullsPerVersion;
-    globalState.arsenalPoints += arsenalPerVersion;
+    const shouldGrantVersionResources = !(excludeFirstVersionResources && version === 0);
+    if (shouldGrantVersionResources) {
+      currentPulls += pullsPerVersion;
+      globalState.arsenalPoints += arsenalPerVersion;
+    }
 
     // 按卡池顺序处理每个角色池
     for (let banner = 0; banner < bannersPerVersion; banner++) {

@@ -9,6 +9,7 @@ interface TopUpInputPanelProps {
   state: SimulatorUIState;
   errors: ValidationErrors;
   onNumberChange: (key: string, value: number) => void;
+  onBooleanChange: (key: string, value: boolean) => void;
   onStartSimulation: () => void;
   onCancel: () => void;
 }
@@ -17,6 +18,7 @@ export function TopUpInputPanel({
   state,
   errors,
   onNumberChange,
+  onBooleanChange,
   onStartSimulation,
   onCancel,
 }: TopUpInputPanelProps) {
@@ -38,8 +40,12 @@ export function TopUpInputPanel({
           arsenalPerVersion={state.arsenalPerVersion}
           versionCount={state.versionCount}
           bannersPerVersion={state.bannersPerVersion}
+          excludeFirstVersionResources={state.excludeFirstVersionResources}
           errors={errors}
           onChange={onNumberChange}
+          onToggleExcludeFirstVersionResources={(checked) =>
+            onBooleanChange('excludeFirstVersionResources', checked)
+          }
           disabled={state.topUpIsRunning}
         />
       </Card>

@@ -19,6 +19,7 @@ export function App() {
     state,
     validationErrors,
     updateNumber,
+    updateBoolean,
     updateBaseStrategy,
     toggleAddonStrategy,
     validate,
@@ -57,6 +58,7 @@ export function App() {
       arsenalPerVersion: state.arsenalPerVersion,
       versionCount: state.versionCount,
       bannersPerVersion: state.bannersPerVersion,
+      excludeFirstVersionResources: state.excludeFirstVersionResources,
       strategyId: state.baseStrategy,
       strategyConfig: strategyConfig,
       trials: state.trials,
@@ -146,6 +148,7 @@ export function App() {
       arsenalPerVersion: state.arsenalPerVersion,
       versionCount: state.versionCount,
       bannersPerVersion: state.bannersPerVersion,
+      excludeFirstVersionResources: state.excludeFirstVersionResources,
       strategyId: state.baseStrategy,
       strategyConfig: undefined,
       trials: state.trials,
@@ -298,6 +301,7 @@ export function App() {
               state={state}
               errors={validationErrors}
               onNumberChange={updateNumber}
+              onBooleanChange={updateBoolean}
               onBaseStrategyChange={updateBaseStrategy}
               onAddonStrategyToggle={toggleAddonStrategy}
               onStartSimulation={handleStartSimulation}
@@ -329,6 +333,7 @@ export function App() {
             state={state}
             errors={validationErrors}
             onNumberChange={updateNumber}
+            onBooleanChange={updateBoolean}
             onStartSimulation={handleStartTopUpSimulation}
             onCancel={handleCancelTopUp}
           />

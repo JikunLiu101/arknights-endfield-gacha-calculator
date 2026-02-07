@@ -8,6 +8,7 @@ export function defaultSimInput(): SimInput {
     arsenalPerVersion: 1000, // 每版本武库配额
     versionCount: 3,
     bannersPerVersion: 2,
+    excludeFirstVersionResources: false,
     strategyId: 'S1',
     trials: 10000,
     seed: null,

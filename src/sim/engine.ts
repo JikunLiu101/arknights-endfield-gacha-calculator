@@ -38,6 +38,8 @@ export function runSimulation(
   const arsenalPerVersion = Math.max(0, Math.floor(input.arsenalPerVersion));
   const versionCount = Math.max(1, Math.floor(input.versionCount));
   const bannersPerVersion = Math.max(1, Math.floor(input.bannersPerVersion));
+  const excludeFirstVersionResources = !!input.excludeFirstVersionResources;
+  const effectiveVersionCount = Math.max(0, versionCount - (excludeFirstVersionResources ? 1 : 0));
 
   // 创建策略配置
   const strategyConfig =
@@ -56,7 +58,8 @@ export function runSimulation(
       pullsPerVersion,
       versionCount,
       bannersPerVersion,
-      rng
+      rng,
+      excludeFirstVersionResources
     );
 
     results.push(result);
@@ -115,7 +118,7 @@ export function runSimulation(
   const avgArsenalRemaining = arsenalRemaining.reduce((sum, v) => sum + v, 0) / totalTrials;
 
   // 计算总资源（初始 + 规划期间获取）
-  const totalPulls = currentPulls + pullsPerVersion * versionCount;
+  const totalPulls = currentPulls + pullsPerVersion * effectiveVersionCount;
   // 武库配额总计应该是：平均花费 + 平均剩余
   const avgArsenalGained = avgArsenalSpent + avgArsenalRemaining;
 
@@ -123,9 +126,15 @@ export function runSimulation(
   const pullsBreakdownLines: string[] = [];
   pullsBreakdownLines.push(`开始模拟前库存${currentPulls}抽`);
   for (let v = 0; v < versionCount; v++) {
-    pullsBreakdownLines.push(
-      `版本${v + 1}卡池1，获得${pullsPerVersion}抽，来自版本福利`
-    );
+    if (excludeFirstVersionResources && v === 0) {
+      pullsBreakdownLines.push(
+        `版本1卡池1，版本福利已排除（不计入版本资源）`
+      );
+    } else {
+      pullsBreakdownLines.push(
+        `版本${v + 1}卡池1，获得${pullsPerVersion}抽，来自版本福利`
+      );
+    }
     for (let b = 0; b < bannersPerVersion; b++) {
       const idx = v * bannersPerVersion + b;
       const bonus = avgByBanner((r) => r.bannerBonusPullsUsedByBanner, idx);
@@ -172,9 +181,15 @@ export function runSimulation(
   );
   for (let v = 0; v < versionCount; v++) {
     const claims = (arsenalPerVersion / 1980).toFixed(1);
-    arsenalBreakdownLines.push(
-      `版本${v + 1}卡池1，获得${arsenalPerVersion}配额（约${claims}次申领），来自版本福利`
-    );
+    if (excludeFirstVersionResources && v === 0) {
+      arsenalBreakdownLines.push(
+        `版本1卡池1，版本福利已排除（不计入版本资源）`
+      );
+    } else {
+      arsenalBreakdownLines.push(
+        `版本${v + 1}卡池1，获得${arsenalPerVersion}配额（约${claims}次申领），来自版本福利`
+      );
+    }
     for (let b = 0; b < bannersPerVersion; b++) {
       const idx = v * bannersPerVersion + b;
       const fromChar = results.reduce(
@@ -322,10 +337,12 @@ export function runTopUpSimulation(
   const arsenalPerVersion = Math.max(0, Math.floor(input.arsenalPerVersion));
   const versionCount = Math.max(1, Math.floor(input.versionCount));
   const bannersPerVersion = Math.max(1, Math.floor(input.bannersPerVersion));
+  const excludeFirstVersionResources = !!input.excludeFirstVersionResources;
+  const effectiveVersionCount = Math.max(0, versionCount - (excludeFirstVersionResources ? 1 : 0));
 
   const totalBanners = versionCount * bannersPerVersion;
   const totalPullsNoTopUp =
-    initialPulls + pullsPerVersion * versionCount + totalBanners * BANNER_BONUS_PULLS;
+    initialPulls + pullsPerVersion * effectiveVersionCount + totalBanners * BANNER_BONUS_PULLS;
 
   const topUpPullsAll: number[] = [];
   const topUpArsenalAll: number[] = [];
@@ -351,8 +368,10 @@ export function runTopUpSimulation(
 
     for (let version = 0; version < versionCount; version++) {
       // 版本开始：发放确定性资源（非充值）
-      currentPulls += pullsPerVersion;
-      globalState.arsenalPoints += arsenalPerVersion;
+      if (!(excludeFirstVersionResources && version === 0)) {
+        currentPulls += pullsPerVersion;
+        globalState.arsenalPoints += arsenalPerVersion;
+      }
 
       for (let banner = 0; banner < bannersPerVersion; banner++) {
         const bannerIndex = version * bannersPerVersion + banner;
@@ -438,7 +457,7 @@ export function runTopUpSimulation(
     }
 
     const arsenalGainedNoTopUp =
-      initialArsenal + arsenalPerVersion * versionCount + arsenalFromNonTopUpPulls;
+      initialArsenal + arsenalPerVersion * effectiveVersionCount + arsenalFromNonTopUpPulls;
 
     topUpPullsAll.push(topUpPulls);
     topUpArsenalAll.push(topUpArsenal);
@@ -488,9 +507,15 @@ export function runTopUpSimulation(
   const pullsNoTopUpBreakdownLines: string[] = [];
   pullsNoTopUpBreakdownLines.push(`开始模拟前库存${initialPulls}抽`);
   for (let v = 0; v < versionCount; v++) {
-    pullsNoTopUpBreakdownLines.push(
-      `版本${v + 1}卡池1，获得${pullsPerVersion}抽，来自版本福利`
-    );
+    if (excludeFirstVersionResources && v === 0) {
+      pullsNoTopUpBreakdownLines.push(
+        `版本1卡池1，版本福利已排除（不计入版本资源）`
+      );
+    } else {
+      pullsNoTopUpBreakdownLines.push(
+        `版本${v + 1}卡池1，获得${pullsPerVersion}抽，来自版本福利`
+      );
+    }
     for (let b = 0; b < bannersPerVersion; b++) {
       pullsNoTopUpBreakdownLines.push(
         `版本${v + 1}卡池${b + 1}，获得${BANNER_BONUS_PULLS}抽，来自卡池赠送`
@@ -503,9 +528,15 @@ export function runTopUpSimulation(
     `开始模拟前库存${initialArsenal}配额（约${(initialArsenal / 1980).toFixed(1)}次申领）`
   );
   for (let v = 0; v < versionCount; v++) {
-    arsenalNoTopUpBreakdownLines.push(
-      `版本${v + 1}卡池1，获得${arsenalPerVersion}配额（约${(arsenalPerVersion / 1980).toFixed(1)}次申领），来自版本福利`
-    );
+    if (excludeFirstVersionResources && v === 0) {
+      arsenalNoTopUpBreakdownLines.push(
+        `版本1卡池1，版本福利已排除（不计入版本资源）`
+      );
+    } else {
+      arsenalNoTopUpBreakdownLines.push(
+        `版本${v + 1}卡池1，获得${arsenalPerVersion}配额（约${(arsenalPerVersion / 1980).toFixed(1)}次申领），来自版本福利`
+      );
+    }
     for (let b = 0; b < bannersPerVersion; b++) {
       const idx = v * bannersPerVersion + b;
       const avgFromChar =

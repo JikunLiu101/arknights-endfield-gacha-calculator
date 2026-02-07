@@ -6,6 +6,7 @@ interface TopUpPlannerPageProps {
   state: SimulatorUIState;
   errors: ValidationErrors;
   onNumberChange: (key: string, value: number) => void;
+  onBooleanChange: (key: string, value: boolean) => void;
   onStartSimulation: () => void;
   onCancel: () => void;
 }
@@ -14,6 +15,7 @@ export function TopUpPlannerPage({
   state,
   errors,
   onNumberChange,
+  onBooleanChange,
   onStartSimulation,
   onCancel,
 }: TopUpPlannerPageProps) {
@@ -23,6 +25,7 @@ export function TopUpPlannerPage({
         state={state}
         errors={errors}
         onNumberChange={onNumberChange}
+        onBooleanChange={onBooleanChange}
         onStartSimulation={onStartSimulation}
         onCancel={onCancel}
       />
