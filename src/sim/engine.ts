@@ -79,8 +79,14 @@ export function runSimulation(
   const arsenalSpent = results.map((r) => r.totalArsenalSpent);
   const arsenalRemaining = results.map((r) => r.remainingArsenal);
 
-  // 计算总卡池数
+   // 资源来源（按卡池）
   const totalBanners = versionCount * bannersPerVersion;
+  const sumArrayAt = (arr: number[], idx: number) => (arr[idx] || 0);
+  const avgByBanner = (selector: (r: StrategyExecutionResult) => number[], idx: number) =>
+    results.reduce((s, r) => s + sumArrayAt(selector(r), idx), 0) / totalTrials;
+
+  // 计算总卡池数
+  // const totalBanners = versionCount * bannersPerVersion;
 
   // 计算角色覆盖率（获得所有角色的概率）
   const characterFullCoverageRate =
@@ -112,6 +118,77 @@ export function runSimulation(
   const totalPulls = currentPulls + pullsPerVersion * versionCount;
   // 武库配额总计应该是：平均花费 + 平均剩余
   const avgArsenalGained = avgArsenalSpent + avgArsenalRemaining;
+
+  // 抽数来源：将“版本福利”按版本的第1个卡池归因，卡池赠送/加急/情报书按具体卡池归因
+  const pullsBreakdownLines: string[] = [];
+  pullsBreakdownLines.push(`开始模拟前库存${currentPulls}抽`);
+  for (let v = 0; v < versionCount; v++) {
+    pullsBreakdownLines.push(
+      `版本${v + 1}卡池1，获得${pullsPerVersion}抽，来自版本福利`
+    );
+    for (let b = 0; b < bannersPerVersion; b++) {
+      const idx = v * bannersPerVersion + b;
+      const bonus = avgByBanner((r) => r.bannerBonusPullsUsedByBanner, idx);
+      const fast = avgByBanner((r) => r.fastTrackPullsUsedByBanner, idx);
+      const intel = avgByBanner((r) => r.intelReportPullsUsedByBanner, idx);
+
+      if (bonus > 0) {
+        pullsBreakdownLines.push(
+          `版本${v + 1}卡池${b + 1}，获得${bonus.toFixed(1)}抽，来自卡池赠送（期望）`
+        );
+      }
+      if (fast > 0) {
+        pullsBreakdownLines.push(
+          `版本${v + 1}卡池${b + 1}，获得${fast.toFixed(1)}抽，来自加急寻访（期望）`
+        );
+      }
+      if (intel > 0) {
+        pullsBreakdownLines.push(
+          `版本${v + 1}卡池${b + 1}，获得${intel.toFixed(1)}抽，来自寻访情报书（期望）`
+        );
+      }
+    }
+  }
+
+  const expectedBonusPulls = results.reduce(
+    (s, r) => s + r.bannerBonusPullsUsedByBanner.reduce((a, v) => a + v, 0),
+    0
+  ) / totalTrials;
+  const expectedFastTrackPulls = results.reduce(
+    (s, r) => s + r.fastTrackPullsUsedByBanner.reduce((a, v) => a + v, 0),
+    0
+  ) / totalTrials;
+  const expectedIntelPulls = results.reduce(
+    (s, r) => s + r.intelReportPullsUsedByBanner.reduce((a, v) => a + v, 0),
+    0
+  ) / totalTrials;
+  const avgTotalPullsGained = totalPulls + expectedBonusPulls + expectedFastTrackPulls + expectedIntelPulls;
+
+  // 武库配额来源（按卡池时间线：版本X卡池Y）
+  const arsenalBreakdownLines: string[] = [];
+  const initialClaims = (currentArsenal / 1980).toFixed(1);
+  arsenalBreakdownLines.push(
+    `开始模拟前库存${currentArsenal}配额（约${initialClaims}次申领）`
+  );
+  for (let v = 0; v < versionCount; v++) {
+    const claims = (arsenalPerVersion / 1980).toFixed(1);
+    arsenalBreakdownLines.push(
+      `版本${v + 1}卡池1，获得${arsenalPerVersion}配额（约${claims}次申领），来自版本福利`
+    );
+    for (let b = 0; b < bannersPerVersion; b++) {
+      const idx = v * bannersPerVersion + b;
+      const fromChar = results.reduce(
+        (s, r) => s + (r.arsenalFromCharacterPullsByBanner[idx] || 0),
+        0
+      ) / totalTrials;
+      if (fromChar > 0) {
+        const claimEq = (fromChar / 1980).toFixed(2);
+        arsenalBreakdownLines.push(
+          `版本${v + 1}卡池${b + 1}，获得${fromChar.toFixed(0)}配额（约${claimEq}次申领），来自角色卡池转化（期望）`
+        );
+      }
+    }
+  }
 
   // 计算分位数（以消耗抽数为基准）
   const sortedPulls = [...pullsSpent].sort((a, b) => a - b);
@@ -186,10 +263,14 @@ export function runSimulation(
   return {
     // 资源统计
     totalPulls,
+    avgTotalPullsGained,
     avgArsenalGained: avgArsenalGained,
     avgPullsSpent: avgSpent,
     avgArsenalSpent,
     avgArsenalClaims,
+
+    pullsBreakdownLines,
+    arsenalBreakdownLines,
 
     // 角色统计
     totalCharacters: totalBanners,
@@ -252,6 +333,8 @@ export function runTopUpSimulation(
   const pullsSpentAll: number[] = [];
   const arsenalSpentAll: number[] = [];
 
+  const arsenalFromNonTopUpPullsByBannerAll: number[][] = [];
+
   for (let i = 0; i < totalTrials; i++) {
     let currentPulls = initialPulls;
     let globalState = createInitialGlobalState();
@@ -264,6 +347,7 @@ export function runTopUpSimulation(
     let arsenalSpent = 0;
 
     let arsenalFromNonTopUpPulls = 0;
+    const arsenalFromNonTopUpPullsByBanner = new Array<number>(totalBanners).fill(0);
 
     for (let version = 0; version < versionCount; version++) {
       // 版本开始：发放确定性资源（非充值）
@@ -271,6 +355,7 @@ export function runTopUpSimulation(
       globalState.arsenalPoints += arsenalPerVersion;
 
       for (let banner = 0; banner < bannersPerVersion; banner++) {
+        const bannerIndex = version * bannersPerVersion + banner;
         // ========== 角色池：抽到UP才收手（含卡池赠送10抽；不触发加急/情报书） ==========
         let bannerState = createInitialBannerState();
 
@@ -286,6 +371,7 @@ export function runTopUpSimulation(
           globalState = newGlobalState;
           bannerState = newBannerState;
           arsenalFromNonTopUpPulls += result.arsenalPoints;
+          arsenalFromNonTopUpPullsByBanner[bannerIndex] += result.arsenalPoints;
 
           if (result.rarity === 6 && result.isRateUp) {
             break;
@@ -317,6 +403,7 @@ export function runTopUpSimulation(
           // 将由“非充值/充值”抽数带来的配额区分开（这里只需要统计“不充值获得配额”）
           if (!isTopUpFunded) {
             arsenalFromNonTopUpPulls += result.arsenalPoints;
+            arsenalFromNonTopUpPullsByBanner[bannerIndex] += result.arsenalPoints;
           }
 
           if (result.rarity === 6 && result.isRateUp) {
@@ -358,6 +445,7 @@ export function runTopUpSimulation(
     arsenalGainedNoTopUpAll.push(arsenalGainedNoTopUp);
     pullsSpentAll.push(pullsSpent);
     arsenalSpentAll.push(arsenalSpent);
+    arsenalFromNonTopUpPullsByBannerAll.push(arsenalFromNonTopUpPullsByBanner);
 
     if (onProgress && (i + 1) % 500 === 0) {
       onProgress(i + 1, totalTrials);
@@ -397,6 +485,40 @@ export function runTopUpSimulation(
   // 为减少横轴分布密度，武库配额按每1000为一个档位
   const topUpArsenalDistribution = buildDistribution(topUpArsenalAll, 1000);
 
+  const pullsNoTopUpBreakdownLines: string[] = [];
+  pullsNoTopUpBreakdownLines.push(`开始模拟前库存${initialPulls}抽`);
+  for (let v = 0; v < versionCount; v++) {
+    pullsNoTopUpBreakdownLines.push(
+      `版本${v + 1}卡池1，获得${pullsPerVersion}抽，来自版本福利`
+    );
+    for (let b = 0; b < bannersPerVersion; b++) {
+      pullsNoTopUpBreakdownLines.push(
+        `版本${v + 1}卡池${b + 1}，获得${BANNER_BONUS_PULLS}抽，来自卡池赠送`
+      );
+    }
+  }
+
+  const arsenalNoTopUpBreakdownLines: string[] = [];
+  arsenalNoTopUpBreakdownLines.push(
+    `开始模拟前库存${initialArsenal}配额（约${(initialArsenal / 1980).toFixed(1)}次申领）`
+  );
+  for (let v = 0; v < versionCount; v++) {
+    arsenalNoTopUpBreakdownLines.push(
+      `版本${v + 1}卡池1，获得${arsenalPerVersion}配额（约${(arsenalPerVersion / 1980).toFixed(1)}次申领），来自版本福利`
+    );
+    for (let b = 0; b < bannersPerVersion; b++) {
+      const idx = v * bannersPerVersion + b;
+      const avgFromChar =
+        arsenalFromNonTopUpPullsByBannerAll.reduce((s, arr) => s + (arr[idx] || 0), 0) /
+        totalTrials;
+      if (avgFromChar > 0) {
+        arsenalNoTopUpBreakdownLines.push(
+          `版本${v + 1}卡池${b + 1}，获得${avgFromChar.toFixed(0)}配额（约${(avgFromChar / 1980).toFixed(2)}次申领），来自角色卡池转化（期望）`
+        );
+      }
+    }
+  }
+
   // 总结句式：中位数 + “超过xx%的玩家需要充值不超过yy”
   const cumulativeSummary = (distribution: { count: number; percentage: number }[], unitLabel: string) => {
     let cumulative = 0;
@@ -423,6 +545,9 @@ export function runTopUpSimulation(
   return {
     totalPullsNoTopUp,
     avgArsenalGainedNoTopUp,
+
+    pullsNoTopUpBreakdownLines,
+    arsenalNoTopUpBreakdownLines,
 
     avgPullsSpent,
     avgArsenalSpent,

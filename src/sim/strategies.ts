@@ -267,7 +267,15 @@ export function pullCharacterBanner(
   isLastVersion: boolean,
   isLastBanner: boolean,
   rng: Rng
-): BannerOutcome & { newGlobalState: GlobalGachaState; generatedIntelReport: boolean } {
+): BannerOutcome & {
+  newGlobalState: GlobalGachaState;
+  generatedIntelReport: boolean;
+  bannerBonusPullsUsed: number;
+  intelReportPullsUsed: number;
+  fastTrackPullsUsed: number;
+  arsenalFromCharacterPulls: number;
+  arsenalFromFastTrack: number;
+} {
   const threshold = config.characterBannerThreshold;
   let currentGlobalState = { ...globalState };
   let bannerState = createInitialBannerState();
@@ -275,8 +283,14 @@ export function pullCharacterBanner(
   let fastTrackResult = null;
   let pullsSpent = 0;
   let arsenalGained = 0;
+  let arsenalFromCharacterPulls = 0;
+  let arsenalFromFastTrack = 0;
   let usedIntelReport = false;
   let generatedIntelReport = false;
+
+  let bannerBonusPullsUsed = 0;
+  let intelReportPullsUsed = 0;
+  let fastTrackPullsUsed = 0;
 
   // ========== 判断是否进入卡池 ==========
 
@@ -327,12 +341,18 @@ export function pullCharacterBanner(
       finalBannerState: bannerState,
       newGlobalState: currentGlobalState,
       generatedIntelReport: false,
+      bannerBonusPullsUsed: 0,
+      intelReportPullsUsed: 0,
+      fastTrackPullsUsed: 0,
+      arsenalFromCharacterPulls: 0,
+      arsenalFromFastTrack: 0,
     };
   }
 
   // ========== 开始抽卡流程 ==========
 
   // 1. 使用卡池赠送的10抽（不消耗库存）
+  bannerBonusPullsUsed = BANNER_BONUS_PULLS;
   for (let i = 0; i < BANNER_BONUS_PULLS; i++) {
     const { result, newGlobalState, newBannerState } = simulateSinglePull(
       currentGlobalState,
@@ -346,6 +366,7 @@ export function pullCharacterBanner(
     bannerState = newBannerState;
     bannerState.pullsInBanner++;
     arsenalGained += result.arsenalPoints;
+    arsenalFromCharacterPulls += result.arsenalPoints;
 
     // 检查是否触发加急招募（30抽）
     if (bannerState.pullsInBanner === 30 && !bannerState.fastTrackUsed) {
@@ -353,7 +374,9 @@ export function pullCharacterBanner(
       fastTrackResult = fastTrack.result;
       currentGlobalState = fastTrack.newGlobalState;
       arsenalGained += fastTrack.result.arsenalGained;
+      arsenalFromFastTrack += fastTrack.result.arsenalGained;
       bannerState.fastTrackUsed = true;
+      fastTrackPullsUsed = BANNER_BONUS_PULLS;
     }
 
     // 检查是否获得UP，如果是基础策略则立即停止
@@ -368,6 +391,11 @@ export function pullCharacterBanner(
         finalBannerState: bannerState,
         newGlobalState: currentGlobalState,
         generatedIntelReport,
+        bannerBonusPullsUsed,
+        intelReportPullsUsed,
+        fastTrackPullsUsed,
+        arsenalFromCharacterPulls,
+        arsenalFromFastTrack,
       };
     }
   }
@@ -378,6 +406,7 @@ export function pullCharacterBanner(
     hasIntelReport &&
     !usedIntelReport
   ) {
+    intelReportPullsUsed = BANNER_BONUS_PULLS;
     for (let i = 0; i < BANNER_BONUS_PULLS; i++) {
       const { result, newGlobalState, newBannerState } = simulateSinglePull(
         currentGlobalState,
@@ -391,6 +420,7 @@ export function pullCharacterBanner(
       bannerState = newBannerState;
       bannerState.pullsInBanner++;
       arsenalGained += result.arsenalPoints;
+      arsenalFromCharacterPulls += result.arsenalPoints;
 
       // 检查是否触发加急招募（30抽）
       if (bannerState.pullsInBanner === 30 && !bannerState.fastTrackUsed) {
@@ -398,7 +428,9 @@ export function pullCharacterBanner(
         fastTrackResult = fastTrack.result;
         currentGlobalState = fastTrack.newGlobalState;
         arsenalGained += fastTrack.result.arsenalGained;
+        arsenalFromFastTrack += fastTrack.result.arsenalGained;
         bannerState.fastTrackUsed = true;
+        fastTrackPullsUsed = BANNER_BONUS_PULLS;
       }
 
       // 检查是否获得UP，如果是基础策略则立即停止
@@ -413,6 +445,11 @@ export function pullCharacterBanner(
           finalBannerState: bannerState,
           newGlobalState: currentGlobalState,
           generatedIntelReport,
+          bannerBonusPullsUsed,
+          intelReportPullsUsed,
+          fastTrackPullsUsed,
+          arsenalFromCharacterPulls,
+          arsenalFromFastTrack,
         };
       }
     }
@@ -434,6 +471,7 @@ export function pullCharacterBanner(
     bannerState.pullsInBanner++;
     pullsSpent++;
     arsenalGained += result.arsenalPoints;
+    arsenalFromCharacterPulls += result.arsenalPoints;
 
     // 检查是否触发加急招募（30抽）
     if (bannerState.pullsInBanner === 30 && !bannerState.fastTrackUsed) {
@@ -441,7 +479,9 @@ export function pullCharacterBanner(
       fastTrackResult = fastTrack.result;
       currentGlobalState = fastTrack.newGlobalState;
       arsenalGained += fastTrack.result.arsenalGained;
+      arsenalFromFastTrack += fastTrack.result.arsenalGained;
       bannerState.fastTrackUsed = true;
+      fastTrackPullsUsed = BANNER_BONUS_PULLS;
     }
 
     // 检查是否触发寻访情报书（60抽）
@@ -462,6 +502,11 @@ export function pullCharacterBanner(
         finalBannerState: bannerState,
         newGlobalState: currentGlobalState,
         generatedIntelReport,
+        bannerBonusPullsUsed,
+        intelReportPullsUsed,
+        fastTrackPullsUsed,
+        arsenalFromCharacterPulls,
+        arsenalFromFastTrack,
       };
     }
   }
@@ -479,6 +524,11 @@ export function pullCharacterBanner(
     finalBannerState: bannerState,
     newGlobalState: currentGlobalState,
     generatedIntelReport,
+    bannerBonusPullsUsed,
+    intelReportPullsUsed,
+    fastTrackPullsUsed,
+    arsenalFromCharacterPulls,
+    arsenalFromFastTrack,
   };
 }
 
@@ -595,6 +645,16 @@ export type StrategyExecutionResult = {
   obtainedAllCharacters: boolean;
   /** 是否获得所有专武（覆盖率100%） */
   obtainedAllWeapons: boolean;
+
+  // ===== 资源来源统计（按卡池） =====
+  /** 每个卡池使用了多少“卡池赠送抽数”（0或10） */
+  bannerBonusPullsUsedByBanner: number[];
+  /** 每个卡池使用了多少“寻访情报书抽数”（0或10） */
+  intelReportPullsUsedByBanner: number[];
+  /** 每个卡池触发了多少“加急寻访抽数”（0或10） */
+  fastTrackPullsUsedByBanner: number[];
+  /** 每个卡池由角色抽卡转化获得的武库配额（不含版本福利、初始库存） */
+  arsenalFromCharacterPullsByBanner: number[];
 };
 
 /**
@@ -630,6 +690,12 @@ export function executeStrategy(
   let totalPullsSpent = 0;
   let totalArsenalSpent = 0;
 
+  const totalBanners = versionCount * bannersPerVersion;
+  const bannerBonusPullsUsedByBanner = new Array<number>(totalBanners).fill(0);
+  const intelReportPullsUsedByBanner = new Array<number>(totalBanners).fill(0);
+  const fastTrackPullsUsedByBanner = new Array<number>(totalBanners).fill(0);
+  const arsenalFromCharacterPullsByBanner = new Array<number>(totalBanners).fill(0);
+
   // 按版本循环
   for (let version = 0; version < versionCount; version++) {
     // 在版本开始时发放资源
@@ -657,6 +723,13 @@ export function executeStrategy(
         isLastBanner,
         rng
       );
+
+      const bannerIndex = version * bannersPerVersion + banner;
+      bannerBonusPullsUsedByBanner[bannerIndex] = bannerOutcome.bannerBonusPullsUsed;
+      intelReportPullsUsedByBanner[bannerIndex] = bannerOutcome.intelReportPullsUsed;
+      fastTrackPullsUsedByBanner[bannerIndex] = bannerOutcome.fastTrackPullsUsed;
+      arsenalFromCharacterPullsByBanner[bannerIndex] =
+        bannerOutcome.arsenalFromCharacterPulls + bannerOutcome.arsenalFromFastTrack;
 
       // 更新资源和状态
       currentPulls -= bannerOutcome.pullsSpent;
@@ -713,9 +786,6 @@ export function executeStrategy(
     }
   }
 
-  // 计算总卡池数
-  const totalBanners = versionCount * bannersPerVersion;
-
   // 返回统计结果
   return {
     obtainedCharacterCount,
@@ -726,5 +796,10 @@ export function executeStrategy(
     remainingArsenal: globalState.arsenalPoints,
     obtainedAllCharacters: obtainedCharacterCount === totalBanners,
     obtainedAllWeapons: obtainedWeaponCount === totalBanners,
+
+    bannerBonusPullsUsedByBanner,
+    intelReportPullsUsedByBanner,
+    fastTrackPullsUsedByBanner,
+    arsenalFromCharacterPullsByBanner,
   };
 }

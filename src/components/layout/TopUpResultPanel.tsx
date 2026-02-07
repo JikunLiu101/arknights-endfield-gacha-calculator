@@ -1,4 +1,5 @@
 import { Card } from '../ui/Card';
+import { HoverBreakdown } from '../ui/HoverBreakdown';
 import type { TopUpSimOutput } from '../../sim/types';
 import {
   BarChart,
@@ -65,23 +66,33 @@ export function TopUpResultPanel({
     <div className="space-y-6">
       <Card title="资源统计（不含充值）" colorScheme="blue">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
-            <div className="text-xs font-medium text-gray-600 mb-1">
-              获得角色抽数总计（不充值）
+          <HoverBreakdown
+            lines={result.pullsNoTopUpBreakdownLines}
+            title="角色抽数来源（按卡池）"
+          >
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
+              <div className="text-xs font-medium text-gray-600 mb-1">
+                获得角色抽数总计（不充值）
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {result.totalPullsNoTopUp.toLocaleString()}
+              </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {result.totalPullsNoTopUp.toLocaleString()}
-            </div>
-          </div>
+          </HoverBreakdown>
 
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
-            <div className="text-xs font-medium text-gray-600 mb-1">
-              获得武库配额总计（不充值，期望）
+          <HoverBreakdown
+            lines={result.arsenalNoTopUpBreakdownLines}
+            title="武库配额来源（按卡池）"
+          >
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
+              <div className="text-xs font-medium text-gray-600 mb-1">
+                获得武库配额总计（不充值，期望）
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {result.avgArsenalGainedNoTopUp.toFixed(0)}
+              </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {result.avgArsenalGainedNoTopUp.toFixed(0)}
-            </div>
-          </div>
+          </HoverBreakdown>
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
               花费角色抽数总计（期望）

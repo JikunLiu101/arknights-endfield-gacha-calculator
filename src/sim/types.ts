@@ -50,10 +50,15 @@ export type SimInput = {
 export type SimOutput = {
   // 资源统计
   totalPulls: number; // 初始 + 获取的总抽数
+  avgTotalPullsGained?: number; // 含卡池赠送/加急/情报书的期望总抽数（用于资源来源提示）
   avgArsenalGained: number; // 初始 + 获取的总武库配额，是平均值
   avgPullsSpent: number; // 平均花费抽数
   avgArsenalSpent: number; // 平均花费武库配额
   avgArsenalClaims: number; // 平均申领次数（武库配额/1980）
+
+  // 资源来源明细（用于 UI 悬浮提示）
+  pullsBreakdownLines?: string[];
+  arsenalBreakdownLines?: string[];
 
   // 角色统计
   totalCharacters: number; // 总限定角色数量（卡池总数）
@@ -90,6 +95,10 @@ export type TopUpSimOutput = {
   // 不充值可获得的资源（角色抽数为确定值；武库配额为期望值，因为来自抽卡的配额是随机的）
   totalPullsNoTopUp: number;
   avgArsenalGainedNoTopUp: number;
+
+  // 资源来源明细（用于 UI 悬浮提示）
+  pullsNoTopUpBreakdownLines?: string[];
+  arsenalNoTopUpBreakdownLines?: string[];
 
   // 期望花费总计（包含卡池赠送、规划资源与充值投入后实际消耗）
   avgPullsSpent: number;

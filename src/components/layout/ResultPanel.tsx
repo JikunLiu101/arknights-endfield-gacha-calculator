@@ -1,4 +1,5 @@
 import { Card } from '../ui/Card';
+import { HoverBreakdown } from '../ui/HoverBreakdown';
 import type { SimOutput } from '../../sim/types';
 import {
   BarChart,
@@ -57,23 +58,27 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
       {/* 资源统计卡片 */}
       <Card title="资源统计" colorScheme="blue">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
-            <div className="text-xs font-medium text-gray-600 mb-1">
-              角色抽数获取总计
+          <HoverBreakdown lines={result.pullsBreakdownLines} title="角色抽数来源（按卡池）">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
+              <div className="text-xs font-medium text-gray-600 mb-1">
+                角色抽数获取总计（期望）
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {(result.avgTotalPullsGained ?? result.totalPulls).toFixed(0)}
+              </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {result.totalPulls.toLocaleString()}
-            </div>
-          </div>
+          </HoverBreakdown>
 
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
-            <div className="text-xs font-medium text-gray-600 mb-1">
-              平均获取武库配额
+          <HoverBreakdown lines={result.arsenalBreakdownLines} title="武库配额来源（按卡池）">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
+              <div className="text-xs font-medium text-gray-600 mb-1">
+                平均获取武库配额
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {result.avgArsenalGained.toFixed(0)}
+              </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {result.avgArsenalGained.toLocaleString()}
-            </div>
-          </div>
+          </HoverBreakdown>
 
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
             <div className="text-xs font-medium text-gray-600 mb-1">
