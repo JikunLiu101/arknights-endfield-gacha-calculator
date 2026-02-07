@@ -1,10 +1,21 @@
-import type { SimInput, SimOutput } from './types';
+import type { SimInput, SimOutput, TopUpSimOutput } from './types';
 import { createRng } from './rng';
 import {
   createDefaultStrategyConfig,
   executeStrategy,
   type StrategyExecutionResult,
+  BANNER_BONUS_PULLS,
 } from './strategies';
+import {
+  createInitialBannerState,
+  createInitialGlobalState,
+  simulateSinglePull,
+} from './gacha-core';
+import {
+  ARSENAL_COST_PER_CLAIM,
+  createInitialWeaponBannerState,
+  simulateWeaponClaim,
+} from './weapon-gacha-core';
 
 /**
  * 运行完整的蒙特卡洛模拟
@@ -205,6 +216,232 @@ export function runSimulation(
 
     debug: {
       note: `真实模拟结果 | 策略: ${strategyConfig.baseStrategy} | 角色期望: ${avgCharacterCount.toFixed(2)}/${totalBanners} | 专武期望: ${avgWeaponCount.toFixed(2)}/${totalBanners} | 角色覆盖率: ${(characterFullCoverageRate * 100).toFixed(1)}% | 专武覆盖率: ${(weaponFullCoverageRate * 100).toFixed(1)}%`,
+      inputEcho: input,
+    },
+  };
+}
+
+/**
+ * 第二分页：全图鉴 0+1 充值估算模拟
+ * - 每个角色池：抽到UP才收手
+ * - 每个武器池：抽到UP专武才收手
+ * - 不使用加急寻访/寻访情报书（因为它们属于“可能获得”）
+ * - 充值按“用到时补齐”计算：每次需要消耗但余额不足，就立即注入刚好够用的数量
+ */
+export function runTopUpSimulation(
+  input: SimInput,
+  onProgress?: (done: number, total: number) => void
+): TopUpSimOutput {
+  const rng = createRng(input.seed);
+
+  const totalTrials = Math.max(1, Math.floor(input.trials));
+  const initialPulls = Math.max(0, Math.floor(input.currentPulls));
+  const initialArsenal = Math.max(0, Math.floor(input.currentArsenal));
+  const pullsPerVersion = Math.max(0, Math.floor(input.pullsPerVersion));
+  const arsenalPerVersion = Math.max(0, Math.floor(input.arsenalPerVersion));
+  const versionCount = Math.max(1, Math.floor(input.versionCount));
+  const bannersPerVersion = Math.max(1, Math.floor(input.bannersPerVersion));
+
+  const totalBanners = versionCount * bannersPerVersion;
+  const totalPullsNoTopUp =
+    initialPulls + pullsPerVersion * versionCount + totalBanners * BANNER_BONUS_PULLS;
+
+  const topUpPullsAll: number[] = [];
+  const topUpArsenalAll: number[] = [];
+  const arsenalGainedNoTopUpAll: number[] = [];
+  const pullsSpentAll: number[] = [];
+  const arsenalSpentAll: number[] = [];
+
+  for (let i = 0; i < totalTrials; i++) {
+    let currentPulls = initialPulls;
+    let globalState = createInitialGlobalState();
+    globalState.arsenalPoints = initialArsenal;
+
+    let topUpPulls = 0;
+    let topUpArsenal = 0;
+
+    let pullsSpent = 0;
+    let arsenalSpent = 0;
+
+    let arsenalFromNonTopUpPulls = 0;
+
+    for (let version = 0; version < versionCount; version++) {
+      // 版本开始：发放确定性资源（非充值）
+      currentPulls += pullsPerVersion;
+      globalState.arsenalPoints += arsenalPerVersion;
+
+      for (let banner = 0; banner < bannersPerVersion; banner++) {
+        // ========== 角色池：抽到UP才收手（含卡池赠送10抽；不触发加急/情报书） ==========
+        let bannerState = createInitialBannerState();
+
+        // 1) 卡池赠送 10 抽（不消耗库存，不计入充值）
+        for (let j = 0; j < BANNER_BONUS_PULLS; j++) {
+          pullsSpent += 1;
+          const { result, newGlobalState, newBannerState } = simulateSinglePull(
+            globalState,
+            bannerState,
+            rng,
+            false
+          );
+          globalState = newGlobalState;
+          bannerState = newBannerState;
+          arsenalFromNonTopUpPulls += result.arsenalPoints;
+
+          if (result.rarity === 6 && result.isRateUp) {
+            break;
+          }
+        }
+
+        // 2) 若还没出UP，用库存抽数继续抽；不足则当场充值补齐
+        while (!bannerState.gotRateUpInThisBanner) {
+          const needPulls = Math.max(0, 1 - currentPulls);
+          const isTopUpFunded = needPulls > 0;
+          if (needPulls > 0) {
+            topUpPulls += needPulls;
+            currentPulls += needPulls;
+          }
+
+          // 消耗 1 抽
+          currentPulls -= 1;
+          pullsSpent += 1;
+
+          const { result, newGlobalState, newBannerState } = simulateSinglePull(
+            globalState,
+            bannerState,
+            rng,
+            false
+          );
+          globalState = newGlobalState;
+          bannerState = newBannerState;
+
+          // 将由“非充值/充值”抽数带来的配额区分开（这里只需要统计“不充值获得配额”）
+          if (!isTopUpFunded) {
+            arsenalFromNonTopUpPulls += result.arsenalPoints;
+          }
+
+          if (result.rarity === 6 && result.isRateUp) {
+            break;
+          }
+        }
+
+        // ========== 武器池：抽到UP专武才收手（不足配额则当场充值补齐） ==========
+        let weaponBannerState = createInitialWeaponBannerState();
+
+        while (!weaponBannerState.gotRateUpInThisBanner) {
+          const needArsenal = Math.max(0, ARSENAL_COST_PER_CLAIM - globalState.arsenalPoints);
+          if (needArsenal > 0) {
+            topUpArsenal += needArsenal;
+            globalState.arsenalPoints += needArsenal;
+          }
+
+          globalState.arsenalPoints -= ARSENAL_COST_PER_CLAIM;
+          arsenalSpent += ARSENAL_COST_PER_CLAIM;
+
+          const { result, newWeaponBannerState } = simulateWeaponClaim(
+            weaponBannerState,
+            rng
+          );
+          weaponBannerState = newWeaponBannerState;
+
+          if (result.gotRateUp) {
+            break;
+          }
+        }
+      }
+    }
+
+    const arsenalGainedNoTopUp =
+      initialArsenal + arsenalPerVersion * versionCount + arsenalFromNonTopUpPulls;
+
+    topUpPullsAll.push(topUpPulls);
+    topUpArsenalAll.push(topUpArsenal);
+    arsenalGainedNoTopUpAll.push(arsenalGainedNoTopUp);
+    pullsSpentAll.push(pullsSpent);
+    arsenalSpentAll.push(arsenalSpent);
+
+    if (onProgress && (i + 1) % 500 === 0) {
+      onProgress(i + 1, totalTrials);
+    }
+  }
+
+  if (onProgress) {
+    onProgress(totalTrials, totalTrials);
+  }
+
+  const avgTopUpPulls = topUpPullsAll.reduce((s, v) => s + v, 0) / totalTrials;
+  const avgTopUpArsenal = topUpArsenalAll.reduce((s, v) => s + v, 0) / totalTrials;
+  const avgArsenalGainedNoTopUp =
+    arsenalGainedNoTopUpAll.reduce((s, v) => s + v, 0) / totalTrials;
+  const avgPullsSpent = pullsSpentAll.reduce((s, v) => s + v, 0) / totalTrials;
+  const avgArsenalSpent = arsenalSpentAll.reduce((s, v) => s + v, 0) / totalTrials;
+
+  const sortedTopUpPulls = [...topUpPullsAll].sort((a, b) => a - b);
+  const sortedTopUpArsenal = [...topUpArsenalAll].sort((a, b) => a - b);
+
+  const medianTopUpPulls = sortedTopUpPulls[Math.floor(sortedTopUpPulls.length / 2)];
+  const medianTopUpArsenal = sortedTopUpArsenal[Math.floor(sortedTopUpArsenal.length / 2)];
+
+  // 分布
+  const buildDistribution = (values: number[], bucketSize?: number) => {
+    const map = new Map<number, number>();
+    for (const v of values) {
+      const key = bucketSize ? Math.floor(v / bucketSize) * bucketSize : v;
+      map.set(key, (map.get(key) || 0) + 1);
+    }
+    return Array.from(map.entries())
+      .map(([count, freq]) => ({ count, percentage: (freq / totalTrials) * 100 }))
+      .sort((a, b) => a.count - b.count);
+  };
+
+  const topUpPullsDistribution = buildDistribution(topUpPullsAll);
+  // 为减少横轴分布密度，武库配额按每1000为一个档位
+  const topUpArsenalDistribution = buildDistribution(topUpArsenalAll, 1000);
+
+  // 总结句式：中位数 + “超过xx%的玩家需要充值不超过yy”
+  const cumulativeSummary = (distribution: { count: number; percentage: number }[], unitLabel: string) => {
+    let cumulative = 0;
+    let threshold = 0;
+    for (const { count, percentage } of distribution) {
+      cumulative += percentage;
+      threshold = count;
+      if (cumulative >= 75) break;
+    }
+    return {
+      cumulative,
+      threshold,
+      text: `超过${cumulative.toFixed(1)}%的玩家需要充值不超过${threshold}${unitLabel}`,
+    };
+  };
+
+  const pullsSummary = cumulativeSummary(topUpPullsDistribution, '抽角色抽数');
+  const arsenalSummary = cumulativeSummary(topUpArsenalDistribution, '武库配额');
+
+  const formatClaims = (arsenal: number) => (arsenal / ARSENAL_COST_PER_CLAIM).toFixed(1);
+  // 武库配额分布是按 1000 桶聚合的；为了配合“充值不超过”措辞，用桶上界（start+999）
+  const arsenalBucketUpperBound = arsenalSummary.threshold + 999;
+
+  return {
+    totalPullsNoTopUp,
+    avgArsenalGainedNoTopUp,
+
+    avgPullsSpent,
+    avgArsenalSpent,
+
+    avgTopUpPulls,
+    medianTopUpPulls,
+    avgTopUpArsenal,
+    medianTopUpArsenal,
+
+    topUpPullsDistribution,
+    topUpArsenalDistribution,
+
+    topUpPullsMedianSummary: `玩家需要充值的角色抽数中位数为${medianTopUpPulls}抽`,
+    topUpPullsCumulativeSummary: pullsSummary.text,
+    topUpArsenalMedianSummary: `玩家需要充值的武库配额中位数为${medianTopUpArsenal}（约${formatClaims(medianTopUpArsenal)}次申领）`,
+    topUpArsenalCumulativeSummary: `超过${arsenalSummary.cumulative.toFixed(1)}%的玩家需要充值不超过${arsenalBucketUpperBound}武库配额（约${formatClaims(arsenalBucketUpperBound)}次申领）`,
+
+    debug: {
+      note: `0+1全图鉴充值估算 | trials=${totalTrials} | 平均充值抽数=${avgTopUpPulls.toFixed(1)} | 平均充值配额=${avgTopUpArsenal.toFixed(0)}`,
       inputEcho: input,
     },
   };

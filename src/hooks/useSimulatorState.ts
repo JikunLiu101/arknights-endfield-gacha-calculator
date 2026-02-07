@@ -23,6 +23,11 @@ export function useSimulatorState() {
     progress: 0,
     error: null,
     result: null,
+
+    topUpIsRunning: false,
+    topUpProgress: 0,
+    topUpError: null,
+    topUpResult: null,
   });
 
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});

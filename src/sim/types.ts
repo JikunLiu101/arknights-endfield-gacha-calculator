@@ -84,14 +84,53 @@ export type SimOutput = {
   };
 };
 
-export type WorkerRunRequest = {
-  type: 'run';
-  input: SimInput;
+// ============ 第二分页：全图鉴 0+1 充值估算输出 ============
+
+export type TopUpSimOutput = {
+  // 不充值可获得的资源（角色抽数为确定值；武库配额为期望值，因为来自抽卡的配额是随机的）
+  totalPullsNoTopUp: number;
+  avgArsenalGainedNoTopUp: number;
+
+  // 期望花费总计（包含卡池赠送、规划资源与充值投入后实际消耗）
+  avgPullsSpent: number;
+  avgArsenalSpent: number;
+
+  // 充值统计（期望/中位数）
+  avgTopUpPulls: number;
+  medianTopUpPulls: number;
+  avgTopUpArsenal: number;
+  medianTopUpArsenal: number;
+
+  // 分布（用于图表）
+  topUpPullsDistribution: { count: number; percentage: number }[];
+  topUpArsenalDistribution: { count: number; percentage: number }[];
+
+  // 总结文案（仿照第一页）
+  topUpPullsMedianSummary: string;
+  topUpPullsCumulativeSummary: string;
+  topUpArsenalMedianSummary: string;
+  topUpArsenalCumulativeSummary: string;
+
+  debug: {
+    note: string;
+    inputEcho: SimInput;
+  };
 };
+
+export type WorkerRunRequest =
+  | {
+      type: 'run';
+      input: SimInput;
+    }
+  | {
+      type: 'runTopUp';
+      input: SimInput;
+    };
 
 export type WorkerResponse =
   | { type: 'progress'; done: number; total: number }
   | { type: 'result'; output: SimOutput }
+  | { type: 'resultTopUp'; output: TopUpSimOutput }
   | { type: 'error'; message: string };
 
 // ============ 卡池机制相关类型 ============

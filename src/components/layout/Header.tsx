@@ -14,7 +14,7 @@ export function Header() {
               明日方舟：终末地 抽卡规划模拟器
             </h1>
             <p className="text-base text-gray-600">
-              作者：Bilibili
+              v1.1.0，作者：Bilibili
               <a
                 href="https://space.bilibili.com/91894447"
                 target="_blank"

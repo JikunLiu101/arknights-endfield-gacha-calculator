@@ -1,4 +1,5 @@
 import type { SimOutput } from '../sim/types';
+import type { TopUpSimOutput } from '../sim/types';
 
 export interface SimulatorUIState {
   // 当前资源
@@ -31,6 +32,12 @@ export interface SimulatorUIState {
 
   // 结果
   result: SimOutput | null;
+
+  // ============ 第二分页：全图鉴 0+1 充值估算 ============
+  topUpIsRunning: boolean;
+  topUpProgress: number; // 0-100
+  topUpError: string | null;
+  topUpResult: TopUpSimOutput | null;
 }
 
 export interface ValidationErrors {
