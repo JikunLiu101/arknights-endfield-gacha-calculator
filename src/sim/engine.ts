@@ -501,8 +501,8 @@ export function runTopUpSimulation(
   };
 
   const topUpPullsDistribution = buildDistribution(topUpPullsAll);
-  // 为减少横轴分布密度，武库配额按每1000为一个档位
-  const topUpArsenalDistribution = buildDistribution(topUpArsenalAll, 1000);
+  // 为减少横轴分布密度，武库配额按每990为一个档位
+  const topUpArsenalDistribution = buildDistribution(topUpArsenalAll, 990);
 
   const pullsNoTopUpBreakdownLines: string[] = [];
   pullsNoTopUpBreakdownLines.push(`开始模拟前库存${initialPulls}抽`);

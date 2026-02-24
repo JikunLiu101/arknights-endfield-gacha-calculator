@@ -33,17 +33,17 @@ export function Button({
 
   const variantStyles = {
     primary: clsx(
-      'bg-gradient-to-r from-blue-500 to-blue-600',
+      'bg-gradient-to-r from-blue-600 to-purple-600',
       'text-white',
-      'shadow-md hover:shadow-lg',
+      'shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40',
       'focus:ring-blue-500',
-      !disabled && !loading && 'hover:from-blue-600 hover:to-blue-700'
+      !disabled && !loading && 'hover:from-blue-700 hover:to-purple-700'
     ),
     secondary: clsx(
-      'bg-white border-2 border-gray-300',
-      'text-gray-700',
-      'hover:bg-gray-50',
-      'focus:ring-gray-400'
+      'bg-slate-700/50 border-2 border-slate-600',
+      'text-gray-200',
+      'hover:bg-slate-700',
+      'focus:ring-slate-500'
     ),
   };
 

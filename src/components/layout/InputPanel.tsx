@@ -69,7 +69,7 @@ export function InputPanel({
       </Card>
 
       {/* 第四部分：模拟设置 */}
-      <Card title="模拟设置" colorScheme="rose">
+      <Card title="模拟设置" colorScheme="red">
         <SimulationSettings
           trials={state.trials}
           isRunning={state.isRunning}

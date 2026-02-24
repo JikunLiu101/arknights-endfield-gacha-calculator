@@ -72,7 +72,7 @@ export function HoverBreakdown({
           isOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
-        } transition-opacity absolute z-30 left-0 top-full mt-2 w-[28rem] max-w-[90vw]`}
+        } transition-opacity absolute z-[100] left-0 top-full mt-2 w-[28rem] max-w-[90vw]`}
         onMouseEnter={() => {
           overTooltipRef.current = true;
           openNow();
@@ -82,12 +82,12 @@ export function HoverBreakdown({
           scheduleHideIfNeeded();
         }}
       >
-        <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4">
-          <div className="text-sm font-semibold text-gray-900 mb-2">{title}</div>
+        <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-xl shadow-black/50 p-4">
+          <div className="text-sm font-semibold text-gray-100 mb-2">{title}</div>
           <div className="max-h-72 overflow-auto">
             <ul className="space-y-1">
               {lines.map((line, idx) => (
-                <li key={idx} className="text-xs text-gray-700 leading-relaxed">
+                <li key={idx} className="text-xs text-gray-300 leading-relaxed">
                   {line}
                 </li>
               ))}

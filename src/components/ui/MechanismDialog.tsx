@@ -34,27 +34,27 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-slate-800 p-6 text-left align-middle shadow-xl shadow-black/50 transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <Dialog.Title
                     as="h3"
-                    className="text-xl font-bold text-gray-900"
+                    className="text-xl font-bold text-gray-100"
                   >
                     卡池机制说明
                   </Dialog.Title>
                   <button
                     type="button"
-                    className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                    className="rounded-md text-gray-400 hover:text-gray-300 focus:outline-none"
                     onClick={onClose}
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
                 </div>
 
-                <div className="space-y-4 text-sm text-gray-700 max-h-[70vh] overflow-y-auto">
+                <div className="space-y-4 text-sm text-gray-300 max-h-[70vh] overflow-y-auto">
                   {/* 基础概率 */}
                   <section>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                       基础概率
                     </h4>
@@ -67,7 +67,7 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
 
                   {/* 保底机制 */}
                   <section>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                       保底机制 (Pity System)
                     </h4>
@@ -80,7 +80,7 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
 
                   {/* 井机制 */}
                   <section>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                       井机制 (Spark System)
                     </h4>
@@ -92,20 +92,20 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
                   </section>
 
                   {/* 卡池赠送 */}
-                  <section className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                  <section className="bg-amber-900/30 border border-amber-700/50 rounded-lg p-3">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
                       卡池赠送10抽
                     </h4>
                     <div className="ml-4 space-y-2">
-                      <p className="text-amber-900">
+                      <p className="text-amber-200">
                         <strong>每个卡池自动赠送10抽</strong>，来源：
                       </p>
                       <ul className="space-y-1">
                         <li>• 登录签到领取：5抽</li>
                         <li>• 商店兑换获得：5抽</li>
                       </ul>
-                      <p className="text-amber-900 mt-2">
+                      <p className="text-amber-200 mt-2">
                         <InformationCircleIcon className="h-4 w-4 inline mr-1" />
                         这10抽<strong>仅可用于当前卡池</strong>，不计入库存抽数
                       </p>
@@ -114,7 +114,7 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
 
                   {/* 加急招募 */}
                   <section>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                       加急招募 (Fast Track)
                     </h4>
@@ -128,7 +128,7 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
 
                   {/* 寻访情报书 */}
                   <section>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                       寻访情报书 (Intelligence Report)
                     </h4>
@@ -143,7 +143,7 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
 
                   {/* 武库配额 */}
                   <section>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                       武库配额 (Arsenal Points)
                     </h4>
@@ -157,30 +157,30 @@ export function MechanismDialog({ isOpen, onClose }: MechanismDialogProps) {
                   </section>
 
                   {/* 武器池机制 */}
-                  <section className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                  <section className="bg-purple-900/30 border border-purple-700/50 rounded-lg p-3">
+                    <h4 className="font-semibold text-gray-100 mb-2 flex items-center">
                       <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
                       武器池申领机制
                     </h4>
                     <div className="ml-4 space-y-2">
-                      <p className="text-purple-900">
+                      <p className="text-purple-200">
                         <strong>申领成本</strong>：每次申领消耗1980武库配额
                       </p>
                       <div className="mt-2">
-                        <p className="text-purple-900 font-semibold">保底机制（4次申领）：</p>
+                        <p className="text-purple-200 font-semibold">保底机制（4次申领）：</p>
                         <ul className="space-y-1 mt-1">
                           <li>• 前3次未获得6星武器时，<strong>第4次必得6星武器</strong></li>
                           <li>• 该6星武器有50%概率为UP专武，50%为其他6星武器</li>
                         </ul>
                       </div>
                       <div className="mt-2">
-                        <p className="text-purple-900 font-semibold">井机制（8次申领）：</p>
+                        <p className="text-purple-200 font-semibold">井机制（8次申领）：</p>
                         <ul className="space-y-1 mt-1">
                           <li>• 前7次未获得UP专武时，<strong>第8次必得UP专武</strong></li>
                           <li>• 完全保证获得目标专武</li>
                         </ul>
                       </div>
-                      <p className="text-purple-900 mt-2">
+                      <p className="text-purple-200 mt-2">
                         <InformationCircleIcon className="h-4 w-4 inline mr-1" />
                         井/保底计数器<strong>每个武器池独立</strong>，更换池后重置
                       </p>

@@ -84,7 +84,7 @@ export function PlanningInputs({
               type="button"
               onClick={() => handleArsenalChange(1980)}
               disabled={disabled}
-              className="px-3 py-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="px-3 py-2 text-sm font-medium text-green-300 bg-green-500/30 border border-green-300 rounded-lg hover:bg-green-300/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               +1申领
             </button>
@@ -92,7 +92,7 @@ export function PlanningInputs({
               type="button"
               onClick={() => handleArsenalChange(-1980)}
               disabled={disabled}
-              className="px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="px-3 py-2 text-sm font-medium text-red-300 bg-red-500/30 border border-red-300 rounded-lg hover:bg-red-300/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               -1申领
             </button>

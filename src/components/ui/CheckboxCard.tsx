@@ -30,10 +30,10 @@ export function CheckboxCard({
             key={option.id}
             className={clsx(
               'relative flex cursor-pointer rounded-lg border p-4 transition-all',
-              'hover:shadow-sm',
+              'hover:shadow-sm hover:shadow-blue-500/10',
               isChecked
-                ? 'border-blue-400 bg-blue-50'
-                : 'border-gray-200 bg-white hover:border-gray-300',
+                ? 'border-blue-500 bg-blue-900/30'
+                : 'border-slate-700 bg-slate-800/30 hover:border-slate-600',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
@@ -50,7 +50,7 @@ export function CheckboxCard({
                   'flex h-5 w-5 items-center justify-center rounded border-2 mr-3 mt-0.5',
                   isChecked
                     ? 'border-blue-500 bg-blue-500'
-                    : 'border-gray-300 bg-white'
+                    : 'border-slate-600 bg-slate-900/50'
                 )}
               >
                 {isChecked && (
@@ -71,16 +71,16 @@ export function CheckboxCard({
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-base font-semibold text-gray-900">
+                  <span className="text-base font-semibold text-gray-100">
                     {option.name}
                   </span>
                   {option.defaultEnabled && (
-                    <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">
+                    <span className="text-xs px-2 py-0.5 rounded bg-green-900/50 text-green-300 border border-green-700">
                       默认开启
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-300 leading-relaxed">
                   {option.description}
                 </p>
               </div>

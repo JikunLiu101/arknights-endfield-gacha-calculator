@@ -66,12 +66,12 @@ export function NumberInput({
     <div className="w-full">
       <label
         htmlFor={label}
-        className="block text-sm font-medium text-gray-700 mb-1"
+        className="block text-sm font-medium text-gray-300 mb-1"
       >
         {label}
       </label>
       {description && (
-        <p className="text-xs text-gray-500 mb-2">{description}</p>
+        <p className="text-xs text-gray-400 mb-2">{description}</p>
       )}
       <input
         id={label}
@@ -88,13 +88,14 @@ export function NumberInput({
         className={clsx(
           'w-full px-4 py-3 rounded-lg border-2 transition-all',
           'text-base font-medium',
+          'bg-slate-900/50 text-gray-100',
           'focus:outline-none',
           error
             ? 'border-red-500 focus:border-red-500'
             : isFocused
             ? 'border-blue-500'
-            : 'border-gray-200 hover:border-gray-300',
-          disabled && 'bg-gray-100 cursor-not-allowed opacity-60'
+            : 'border-slate-700 hover:border-slate-600',
+          disabled && 'bg-slate-900/30 cursor-not-allowed opacity-60'
         )}
       />
       {error && (

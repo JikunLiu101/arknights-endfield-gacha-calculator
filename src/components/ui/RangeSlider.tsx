@@ -37,14 +37,14 @@ export function RangeSlider({
   return (
     <div className="w-full">
       <div className="flex justify-between items-baseline mb-1">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-        <span className="text-2xl font-bold text-blue-600">
+        <label className="text-sm font-medium text-gray-300">{label}</label>
+        <span className="text-2xl font-bold text-blue-400">
           {displayValue}
         </span>
       </div>
 
       {description && (
-        <p className="text-xs text-gray-500 mb-2">{description}</p>
+        <p className="text-xs text-gray-400 mb-2">{description}</p>
       )}
 
       <input
@@ -55,7 +55,7 @@ export function RangeSlider({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         disabled={disabled}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer
+        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer
                    disabled:opacity-50 disabled:cursor-not-allowed
                    [&::-webkit-slider-thumb]:appearance-none
                    [&::-webkit-slider-thumb]:w-5
@@ -65,6 +65,8 @@ export function RangeSlider({
                    [&::-webkit-slider-thumb]:cursor-pointer
                    [&::-webkit-slider-thumb]:hover:bg-blue-600
                    [&::-webkit-slider-thumb]:transition-colors
+                   [&::-webkit-slider-thumb]:shadow-lg
+                   [&::-webkit-slider-thumb]:shadow-blue-500/30
                    [&::-moz-range-thumb]:w-5
                    [&::-moz-range-thumb]:h-5
                    [&::-moz-range-thumb]:rounded-full
@@ -72,11 +74,12 @@ export function RangeSlider({
                    [&::-moz-range-thumb]:cursor-pointer
                    [&::-moz-range-thumb]:hover:bg-blue-600
                    [&::-moz-range-thumb]:border-0
-                   [&::-moz-range-thumb]:transition-colors"
+                   [&::-moz-range-thumb]:transition-colors
+                   [&::-moz-range-thumb]:shadow-lg"
       />
 
       {showMarks && marks.length > 0 && (
-        <div className="flex justify-between mt-2 text-xs text-gray-500">
+        <div className="flex justify-between mt-2 text-xs text-gray-400">
           {marks.map((mark) => (
             <span key={mark}>{formatter ? formatter(mark) : mark}</span>
           ))}
@@ -84,7 +87,7 @@ export function RangeSlider({
       )}
 
       {warning && (
-        <div className="mt-2 flex items-center text-sm text-amber-600">
+        <div className="mt-2 flex items-center text-sm text-amber-400">
           <span className="mr-1">⚠️</span>
           <span>{warning}</span>
         </div>

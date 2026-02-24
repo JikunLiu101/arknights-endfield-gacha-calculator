@@ -32,10 +32,10 @@ export function RadioCard({
             key={option.id}
             className={clsx(
               'relative flex cursor-pointer rounded-xl border-2 p-5 transition-all',
-              'hover:shadow-md',
+              'hover:shadow-md hover:shadow-blue-500/10',
               isSelected
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 bg-white hover:border-blue-300',
+                ? 'border-blue-500 bg-blue-900/30 shadow-lg shadow-blue-500/20'
+                : 'border-slate-700 bg-slate-800/30 hover:border-blue-600/50',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
@@ -60,17 +60,17 @@ export function RadioCard({
                     <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                   )}
                 </div>
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-lg font-semibold text-gray-100">
                   {option.name}
                 </span>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-gray-300 leading-relaxed">
                 {option.description}
               </p>
               {option.metadata && Object.keys(option.metadata).length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
+                <div className="mt-3 pt-3 border-t border-slate-700">
                   {Object.entries(option.metadata).map(([key, val]) => (
-                    <div key={key} className="text-xs text-gray-500">
+                    <div key={key} className="text-xs text-gray-400">
                       <span className="font-medium">{key}:</span> {String(val)}
                     </div>
                   ))}

@@ -32,22 +32,23 @@ export function Select({
       <Listbox value={value} onChange={onChange} disabled={disabled}>
         {({ open }) => (
           <>
-            <Listbox.Label className="block text-sm font-medium text-gray-700 mb-1">
+            <Listbox.Label className="block text-sm font-medium text-gray-300 mb-1">
               {label}
             </Listbox.Label>
             {description && (
-              <p className="text-xs text-gray-500 mb-2">{description}</p>
+              <p className="text-xs text-gray-400 mb-2">{description}</p>
             )}
             <div className="relative">
               <Listbox.Button
                 className={clsx(
                   'relative w-full px-4 py-3 rounded-lg border-2 transition-all',
                   'text-base font-medium text-left',
+                  'bg-slate-900/50 text-gray-100',
                   'focus:outline-none',
                   open
                     ? 'border-blue-500'
-                    : 'border-gray-200 hover:border-gray-300',
-                  disabled && 'bg-gray-100 cursor-not-allowed'
+                    : 'border-slate-700 hover:border-slate-600',
+                  disabled && 'bg-slate-900/30 cursor-not-allowed'
                 )}
               >
                 <span className="block truncate">
@@ -70,7 +71,7 @@ export function Select({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <Listbox.Options className="absolute z-10 mt-2 w-full bg-white shadow-lg max-h-60 rounded-lg py-1 text-base overflow-auto focus:outline-none border border-gray-200">
+                <Listbox.Options className="absolute z-10 mt-2 w-full bg-slate-800 shadow-lg max-h-60 rounded-lg py-1 text-base overflow-auto focus:outline-none border border-slate-700">
                   {options.map((option) => (
                     <Listbox.Option
                       key={option.value}
@@ -78,7 +79,7 @@ export function Select({
                       className={({ active }) =>
                         clsx(
                           'relative cursor-pointer select-none py-3 pl-10 pr-4 transition-colors',
-                          active ? 'bg-blue-50 text-blue-900' : 'text-gray-900'
+                          active ? 'bg-blue-900/50 text-blue-100' : 'text-gray-200'
                         )
                       }
                     >

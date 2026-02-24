@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 import { useSimulatorState } from './hooks/useSimulatorState';
-import { Header } from './components/layout/Header';
 import { InputPanel } from './components/layout/InputPanel';
 import { ResultPanel } from './components/layout/ResultPanel';
 import { TopUpPlannerPage } from './components/layout/TopUpPlannerPage';
@@ -247,19 +246,26 @@ export function App() {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-4 py-6 max-w-7xl">
+        {/* 页面标题 */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            明日方舟：终末地 抽卡规划模拟器
+          </h1>
+          <p className="text-gray-300 text-sm">
+            Arknights: Endfield Gacha Calculator
+          </p>
+        </div>
         {/* 分页切换（两个分页都保持挂载，切换时状态会保留） */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => setActivePage('collection-probability')}
               className={
                 activePage === 'collection-probability'
-                  ? 'px-4 py-2 rounded-lg font-semibold text-sm bg-white border border-gray-300 text-gray-900'
-                  : 'px-4 py-2 rounded-lg font-semibold text-sm bg-white/60 border border-gray-200 text-gray-600 hover:bg-white'
+                  ? 'px-6 py-3 rounded-lg font-semibold text-sm bg-gradient-to-r from-blue-600 to-purple-600 border-2 border-blue-500 text-white shadow-lg shadow-blue-500/30'
+                  : 'px-6 py-3 rounded-lg font-semibold text-sm bg-slate-800/50 border-2 border-slate-700 text-gray-300 hover:bg-slate-700/70 hover:border-slate-600 transition-all'
               }
               aria-current={
                 activePage === 'collection-probability' ? 'page' : undefined
@@ -273,8 +279,8 @@ export function App() {
               onClick={() => setActivePage('topup-planner')}
               className={
                 activePage === 'topup-planner'
-                  ? 'px-4 py-2 rounded-lg font-semibold text-sm bg-white border border-gray-300 text-gray-900'
-                  : 'px-4 py-2 rounded-lg font-semibold text-sm bg-white/60 border border-gray-200 text-gray-600 hover:bg-white'
+                  ? 'px-6 py-3 rounded-lg font-semibold text-sm bg-gradient-to-r from-blue-600 to-purple-600 border-2 border-blue-500 text-white shadow-lg shadow-blue-500/30'
+                  : 'px-6 py-3 rounded-lg font-semibold text-sm bg-slate-800/50 border-2 border-slate-700 text-gray-300 hover:bg-slate-700/70 hover:border-slate-600 transition-all'
               }
               aria-current={activePage === 'topup-planner' ? 'page' : undefined}
             >
@@ -289,7 +295,7 @@ export function App() {
           aria-hidden={activePage !== 'collection-probability'}
         >
           {state.error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <div className="mb-6 bg-red-900/30 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg backdrop-blur-sm">
               <strong className="font-semibold">错误: </strong>
               <span>{state.error}</span>
             </div>
@@ -323,7 +329,7 @@ export function App() {
           aria-hidden={activePage !== 'topup-planner'}
         >
           {state.topUpError && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <div className="mb-6 bg-red-900/30 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg backdrop-blur-sm">
               <strong className="font-semibold">错误: </strong>
               <span>{state.topUpError}</span>
             </div>
