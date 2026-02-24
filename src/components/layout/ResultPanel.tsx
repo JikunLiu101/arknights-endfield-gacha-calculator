@@ -1,5 +1,6 @@
 import { Card } from '../ui/Card';
 import { HoverBreakdown } from '../ui/HoverBreakdown';
+import { SimulationSettings } from '../forms/SimulationSettings';
 import type { SimOutput } from '../../sim/types';
 import {
   BarChart,
@@ -16,12 +17,28 @@ interface ResultPanelProps {
   result: SimOutput | null;
   isRunning: boolean;
   progress: number;
+  trials: 1000 | 5000 | 10000 | 20000 | 100000;
+  onTrialsChange: (value: number) => void;
+  onStart: () => void;
+  onCancel: () => void;
 }
 
-export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
-  if (isRunning) {
-    return (
-      <div className="space-y-6">
+export function ResultPanel({ result, isRunning, progress, trials, onTrialsChange, onStart, onCancel }: ResultPanelProps) {
+  return (
+    <div className="space-y-6">
+      {/* 模拟设置 */}
+      <Card title="模拟设置" colorScheme="red">
+        <SimulationSettings
+          trials={trials}
+          isRunning={isRunning}
+          progress={progress}
+          onTrialsChange={onTrialsChange}
+          onStart={onStart}
+          onCancel={onCancel}
+        />
+      </Card>
+
+      {isRunning && (
         <Card title="模拟进行中" colorScheme="cyan">
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
@@ -31,13 +48,9 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
             <p className="text-sm text-gray-300">进度: {progress.toFixed(1)}%</p>
           </div>
         </Card>
-      </div>
-    );
-  }
+      )}
 
-  if (!result) {
-    return (
-      <div className="space-y-6">
+      {!isRunning && !result && (
         <Card title="模拟结果" colorScheme="indigo">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📊</div>
@@ -49,14 +62,12 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
             </p>
           </div>
         </Card>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="space-y-6">
-      {/* 资源统计卡片 */}
-      <Card title="资源统计" colorScheme="cyan" className="relative z-10">
+      {!isRunning && result && (
+        <>
+          {/* 资源统计卡片 */}
+          <Card title="资源统计" colorScheme="cyan" className="relative z-10">
         <div className="grid grid-cols-2 gap-4">
           <HoverBreakdown lines={result.pullsBreakdownLines} title="角色抽数来源（按卡池）">
             <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 border border-blue-700/50 rounded-xl p-4">
@@ -231,6 +242,8 @@ export function ResultPanel({ result, isRunning, progress }: ResultPanelProps) {
           </div>
         </div>
       </Card>
+        </>
+      )}
     </div>
   );
 }

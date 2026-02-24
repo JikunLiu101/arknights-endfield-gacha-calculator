@@ -3,7 +3,6 @@ import { Card } from '../ui/Card';
 import { ResourceInputs } from '../forms/ResourceInputs';
 import { PlanningInputs } from '../forms/PlanningInputs';
 import { StrategySelector } from '../forms/StrategySelector';
-import { SimulationSettings } from '../forms/SimulationSettings';
 import type { SimulatorUIState, ValidationErrors } from '../../types/ui';
 
 interface InputPanelProps {
@@ -13,8 +12,6 @@ interface InputPanelProps {
   onBooleanChange: (key: string, value: boolean) => void;
   onBaseStrategyChange: (strategy: 'S1' | 'S2') => void;
   onAddonStrategyToggle: (id: 'A1' | 'A2' | 'A3' | 'A4' | 'A5') => void;
-  onStartSimulation: () => void;
-  onCancel: () => void;
 }
 
 export function InputPanel({
@@ -24,8 +21,6 @@ export function InputPanel({
   onBooleanChange,
   onBaseStrategyChange,
   onAddonStrategyToggle,
-  onStartSimulation,
-  onCancel,
 }: InputPanelProps) {
   return (
     <div className="space-y-6">
@@ -65,18 +60,6 @@ export function InputPanel({
           onBaseStrategyChange={onBaseStrategyChange}
           onAddonStrategyToggle={onAddonStrategyToggle}
           disabled={state.isRunning}
-        />
-      </Card>
-
-      {/* 第四部分：模拟设置 */}
-      <Card title="模拟设置" colorScheme="red">
-        <SimulationSettings
-          trials={state.trials}
-          isRunning={state.isRunning}
-          progress={state.progress}
-          onTrialsChange={(value) => onNumberChange('trials', value)}
-          onStart={onStartSimulation}
-          onCancel={onCancel}
         />
       </Card>
     </div>

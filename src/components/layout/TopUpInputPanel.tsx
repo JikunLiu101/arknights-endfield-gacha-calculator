@@ -1,7 +1,6 @@
 import { Card } from '../ui/Card';
 import { ResourceInputs } from '../forms/ResourceInputs';
 import { PlanningInputs } from '../forms/PlanningInputs';
-import { SimulationSettings } from '../forms/SimulationSettings';
 import { RadioCard } from '../ui/RadioCard';
 import type { SimulatorUIState, ValidationErrors } from '../../types/ui';
 
@@ -10,8 +9,6 @@ interface TopUpInputPanelProps {
   errors: ValidationErrors;
   onNumberChange: (key: string, value: number) => void;
   onBooleanChange: (key: string, value: boolean) => void;
-  onStartSimulation: () => void;
-  onCancel: () => void;
 }
 
 export function TopUpInputPanel({
@@ -19,8 +16,6 @@ export function TopUpInputPanel({
   errors,
   onNumberChange,
   onBooleanChange,
-  onStartSimulation,
-  onCancel,
 }: TopUpInputPanelProps) {
   return (
     <div className="space-y-6">
@@ -66,17 +61,6 @@ export function TopUpInputPanel({
           }}
           gridCols={1}
           disabled={state.topUpIsRunning}
-        />
-      </Card>
-
-      <Card title="模拟设置" colorScheme="rose">
-        <SimulationSettings
-          trials={state.trials}
-          isRunning={state.topUpIsRunning}
-          progress={state.topUpProgress}
-          onTrialsChange={(value) => onNumberChange('trials', value)}
-          onStart={onStartSimulation}
-          onCancel={onCancel}
         />
       </Card>
     </div>

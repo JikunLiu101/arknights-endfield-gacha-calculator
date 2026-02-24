@@ -1,5 +1,6 @@
 
 import clsx from 'clsx';
+import { useState } from 'react';
 
 interface CardProps {
   title?: string;
@@ -7,6 +8,8 @@ interface CardProps {
   className?: string;
   headerAction?: React.ReactNode;
   colorScheme?: 'blue' | 'purple' | 'red' | 'amber' | 'rose' | 'cyan' | 'indigo' | 'yellow' | 'green';
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }
 
 const colorSchemes = {
@@ -21,7 +24,23 @@ const colorSchemes = {
   green: 'bg-green-900/60 border-green-700/80',
 };
 
-export function Card({ title, children, className, headerAction, colorScheme }: CardProps) {
+export function Card({ 
+  title, 
+  children, 
+  className, 
+  headerAction, 
+  colorScheme,
+  collapsible = true,
+  defaultCollapsed = false 
+}: CardProps) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  
+  const toggleCollapse = () => {
+    if (collapsible && title) {
+      setIsCollapsed(!isCollapsed);
+    }
+  };
+
   return (
     <div
       className={clsx(
@@ -30,19 +49,42 @@ export function Card({ title, children, className, headerAction, colorScheme }: 
       )}
     >
       {title && (
-        <div className={clsx(
-          'px-6 py-4 border-b',
-          colorScheme ? colorSchemes[colorScheme] : 'border-slate-700/50'
-        )}>
+        <div 
+          className={clsx(
+            'px-6 py-4 border-b',
+            colorScheme ? colorSchemes[colorScheme] : 'border-slate-700/50',
+            collapsible && 'cursor-pointer select-none hover:opacity-90 transition-opacity'
+          )}
+          onClick={toggleCollapse}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-100">{title}</h2>
-            {headerAction && (
-              <div className="flex-shrink-0">{headerAction}</div>
-            )}
+            <div className="flex items-center gap-2">
+              {headerAction && (
+                <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {headerAction}
+                </div>
+              )}
+              {collapsible && (
+                <svg 
+                  className={clsx(
+                    'w-5 h-5 text-gray-300 transition-transform duration-200 flex-shrink-0',
+                    isCollapsed ? '-rotate-90' : 'rotate-0'
+                  )}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              )}
+            </div>
           </div>
         </div>
       )}
-      <div className="p-6">{children}</div>
+      {!isCollapsed && (
+        <div className="p-6">{children}</div>
+      )}
     </div>
   );
 }

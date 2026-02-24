@@ -1,5 +1,6 @@
 import { Card } from '../ui/Card';
 import { HoverBreakdown } from '../ui/HoverBreakdown';
+import { SimulationSettings } from '../forms/SimulationSettings';
 import type { TopUpSimOutput } from '../../sim/types';
 import {
   BarChart,
@@ -16,54 +17,30 @@ interface TopUpResultPanelProps {
   result: TopUpSimOutput | null;
   isRunning: boolean;
   progress: number;
+  trials: 1000 | 5000 | 10000 | 20000 | 100000;
+  onTrialsChange: (value: number) => void;
+  onStart: () => void;
+  onCancel: () => void;
 }
 
 export function TopUpResultPanel({
   result,
   isRunning,
   progress,
+  trials,
+  onTrialsChange,
+  onStart,
+  onCancel,
 }: TopUpResultPanelProps) {
-  if (isRunning) {
-    return (
-      <div className="space-y-6">
-        <Card title="模拟进行中" colorScheme="cyan">
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
-            <p className="text-lg font-semibold text-gray-100 mb-2">
-              正在运行模拟...
-            </p>
-            <p className="text-sm text-gray-300">进度: {progress.toFixed(1)}%</p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!result) {
-    return (
-      <div className="space-y-6">
-        <Card title="模拟结果" colorScheme="indigo">
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📊</div>
-            <p className="text-lg font-semibold text-gray-100 mb-2">
-              还没有运行模拟
-            </p>
-            <p className="text-sm text-gray-300">
-              配置好参数后，点击"开始模拟"按钮查看充值估算
-            </p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  const medianTopUpArsenalBucket =
-    Math.floor(result.medianTopUpArsenal / 1000) * 1000;
+  // 计算中位数所在bucket和分组（仅在result存在时）
+  const medianTopUpArsenalBucket = result
+    ? Math.floor(result.medianTopUpArsenal / 1000) * 1000
+    : 0;
 
   const formatClaims = (arsenal: number) => (arsenal / 1980).toFixed(1);
 
   // 将充值抽数分布按5抽一组进行合并
-  const groupedTopUpPullsDistribution = result.topUpPullsDistribution.reduce((acc, entry) => {
+  const groupedTopUpPullsDistribution = result ? result.topUpPullsDistribution.reduce((acc, entry) => {
     const groupStart = Math.floor(entry.count / 5) * 5;
     const groupEnd = groupStart + 4;
     const groupKey = `${groupStart}-${groupEnd}`;
@@ -80,12 +57,52 @@ export function TopUpResultPanel({
       });
     }
     return acc;
-  }, [] as Array<{ range: string; rangeStart: number; rangeEnd: number; percentage: number }>);
+  }, [] as Array<{ range: string; rangeStart: number; rangeEnd: number; percentage: number }>) : [];
 
-  const medianTopUpPullsGroup = Math.floor(result.medianTopUpPulls / 5) * 5;
+  const medianTopUpPullsGroup = result ? Math.floor(result.medianTopUpPulls / 5) * 5 : 0;
 
   return (
     <div className="space-y-6">
+      {/* 模拟设置 */}
+      <Card title="模拟设置" colorScheme="red">
+        <SimulationSettings
+          trials={trials}
+          isRunning={isRunning}
+          progress={progress}
+          onTrialsChange={onTrialsChange}
+          onStart={onStart}
+          onCancel={onCancel}
+        />
+      </Card>
+
+      {isRunning && (
+        <Card title="模拟进行中" colorScheme="cyan">
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
+            <p className="text-lg font-semibold text-gray-100 mb-2">
+              正在运行模拟...
+            </p>
+            <p className="text-sm text-gray-300">进度: {progress.toFixed(1)}%</p>
+          </div>
+        </Card>
+      )}
+
+      {!isRunning && !result && (
+        <Card title="模拟结果" colorScheme="indigo">
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">📊</div>
+            <p className="text-lg font-semibold text-gray-100 mb-2">
+              还没有运行模拟
+            </p>
+            <p className="text-sm text-gray-300">
+              配置好参数后，点击"开始模拟"按钮查看充值估算
+            </p>
+          </div>
+        </Card>
+      )}
+
+      {!isRunning && result && (
+        <>
       <Card title="资源统计（不含充值）" colorScheme="cyan" className="relative z-10">
         <div className="grid grid-cols-2 gap-4">
           <HoverBreakdown
@@ -269,6 +286,8 @@ export function TopUpResultPanel({
           </div>
         </div>
       </Card>
+        </>
+      )}
     </div>
   );
 }

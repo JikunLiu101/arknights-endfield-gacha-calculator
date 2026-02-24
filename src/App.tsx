@@ -310,8 +310,6 @@ export function App() {
               onBooleanChange={updateBoolean}
               onBaseStrategyChange={updateBaseStrategy}
               onAddonStrategyToggle={toggleAddonStrategy}
-              onStartSimulation={handleStartSimulation}
-              onCancel={handleCancel}
             />
 
             {/* 右侧：结果面板 */}
@@ -319,6 +317,10 @@ export function App() {
               result={state.result}
               isRunning={state.isRunning}
               progress={state.progress}
+              trials={state.trials}
+              onTrialsChange={(value) => updateNumber('trials', value)}
+              onStart={handleStartSimulation}
+              onCancel={handleCancel}
             />
           </div>
         </section>

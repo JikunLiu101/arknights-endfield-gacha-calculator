@@ -26,14 +26,16 @@ export function TopUpPlannerPage({
         errors={errors}
         onNumberChange={onNumberChange}
         onBooleanChange={onBooleanChange}
-        onStartSimulation={onStartSimulation}
-        onCancel={onCancel}
       />
 
       <TopUpResultPanel
         result={state.topUpResult}
         isRunning={state.topUpIsRunning}
         progress={state.topUpProgress}
+        trials={state.trials}
+        onTrialsChange={(value) => onNumberChange('trials', value)}
+        onStart={onStartSimulation}
+        onCancel={onCancel}
       />
     </div>
   );

@@ -24,7 +24,7 @@ export interface SimulatorUIState {
   };
 
   // 模拟设置
-  trials: 1000 | 5000 | 10000 | 20000;
+  trials: 1000 | 5000 | 10000 | 20000 | 100000;
 
   // 运行状态
   isRunning: boolean;
